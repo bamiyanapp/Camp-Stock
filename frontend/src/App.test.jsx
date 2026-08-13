@@ -26,4 +26,9 @@ describe("App", () => {
     render(<App />);
     expect(screen.getByText(/^v\d+\.\d+\.\d+$/)).toBeInTheDocument();
   });
+
+  it("ビルド日時を表示する", () => {
+    render(<App />);
+    expect(screen.getByText(/^更新日時: /)).toBeInTheDocument();
+  });
 });
