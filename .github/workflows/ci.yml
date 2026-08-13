@@ -11,5 +11,6 @@ jobs:
     with:
       frontend_dir: frontend
       backend_dir: backend
+      node_version: "22"
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
