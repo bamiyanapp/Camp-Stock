@@ -59,10 +59,31 @@ ITEMS_TABLE_NAME=camp-stock-items node seed/seed-items.js
 
 ## デプロイ
 
-`infra/template.yaml`（AWS SAM）を使う。AWS認証情報・GitHub Secretsは未登録のため、本リポジトリの初期構築時点ではデプロイを行っていない。
+`infra/template.yaml`（AWS SAM）でバックエンド（Lambda/API Gateway/DynamoDB）を、S3+CloudFrontでフロントエンドを配信する。`main`へのマージをトリガーに`.github/workflows/cd.yml`が自動でデプロイする。
+
+### CDが必要とするGitHub Secrets
+
+| シークレット名 | 用途 |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | AWSデプロイ用IAMユーザーのアクセスキー |
+| `AWS_SECRET_ACCESS_KEY` | 同シークレットキー |
+| `BOT_TOKEN` | （任意）semantic-releaseのバージョン更新コミット・タグpush、GitHub Release作成用 |
+
+IAMユーザーには、CloudFormation・Lambda・API Gateway・DynamoDB・S3・CloudFront・IAM（Lambda実行ロール作成用）への権限が必要。リージョンは`.github/workflows/cd.yml`の`AWS_REGION`（既定: `ap-northeast-1`）で変更できる。
+
+### 手動デプロイ（ローカル/デバッグ用）
 
 ```sh
 cd infra
 sam build
 sam deploy --guided
+```
+
+`sam deploy`完了後、スタックの出力（`ApiEndpoint` / `FrontendBucketName` / `FrontendDistributionId` / `FrontendUrl`）を使ってフロントエンドをビルド・アップロードする。
+
+```sh
+cd frontend
+VITE_API_BASE_URL=<ApiEndpointの値> npm run build
+aws s3 sync dist s3://<FrontendBucketNameの値> --delete
+aws cloudfront create-invalidation --distribution-id <FrontendDistributionIdの値> --paths "/*"
 ```

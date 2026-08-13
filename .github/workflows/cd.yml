@@ -1,0 +1,102 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    uses: bamiyanapp/dev-standards/.github/workflows/reusable-cd.yml@v1.22.0
+    with:
+      enable_shared_release_config: true
+    secrets:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+  deploy:
+    name: Deploy to AWS
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AWS_REGION: ap-northeast-1
+      STACK_NAME: camp-stock
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build backend (SAM)
+        working-directory: infra
+        run: sam build
+
+      # SAMの管理用S3バケットは--resolve-s3で自動作成・再利用する
+      - name: Deploy backend (SAM)
+        working-directory: infra
+        run: |
+          sam deploy \
+            --stack-name "$STACK_NAME" \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      - name: Get stack outputs
+        id: stack-outputs
+        run: |
+          get_output() {
+            aws cloudformation describe-stacks \
+              --stack-name "$STACK_NAME" \
+              --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" \
+              --output text
+          }
+          echo "api_endpoint=$(get_output ApiEndpoint)" >> "$GITHUB_OUTPUT"
+          echo "frontend_bucket=$(get_output FrontendBucketName)" >> "$GITHUB_OUTPUT"
+          echo "frontend_distribution_id=$(get_output FrontendDistributionId)" >> "$GITHUB_OUTPUT"
+          echo "frontend_url=$(get_output FrontendUrl)" >> "$GITHUB_OUTPUT"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: ${{ steps.stack-outputs.outputs.api_endpoint }}
+        run: npm run build
+
+      - name: Upload frontend to S3
+        run: |
+          aws s3 sync frontend/dist "s3://${{ steps.stack-outputs.outputs.frontend_bucket }}" --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ steps.stack-outputs.outputs.frontend_distribution_id }}" \
+            --paths "/*"
+
+      - name: Write deployment URLs to job summary
+        run: |
+          {
+            echo "## デプロイ完了"
+            echo ""
+            echo "- フロントエンド: ${{ steps.stack-outputs.outputs.frontend_url }}"
+            echo "- API: ${{ steps.stack-outputs.outputs.api_endpoint }}"
+          } >> "$GITHUB_STEP_SUMMARY"
