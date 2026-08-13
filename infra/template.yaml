@@ -7,7 +7,7 @@ Globals:
   Function:
     Timeout: 10
     MemorySize: 256
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     Environment:
       Variables:
         ITEMS_TABLE_NAME: !Ref ItemsTable
@@ -75,6 +75,71 @@ Resources:
             Path: /{proxy+}
             Method: ANY
 
+  # フロントエンド（Vite/Reactのビルド成果物）配信用。バケット自体はパブリック
+  # アクセスをブロックし、CloudFrontのOrigin Access Control経由でのみ読み取りを許可する。
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "camp-stock-frontend-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${FrontendDistribution}"
+
+  FrontendOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "camp-stock-frontend-oac-${AWS::AccountId}"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        # SPAのクライアントサイドルーティング（react-router-domのBrowserRouter）向けに、
+        # S3が返す403/404を200のindex.htmlへフォールバックさせる
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        Origins:
+          - Id: FrontendBucketOrigin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !Ref FrontendOriginAccessControl
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        DefaultCacheBehavior:
+          TargetOriginId: FrontendBucketOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # AWS managed: CachingOptimized
+
 Outputs:
   ApiEndpoint:
     Description: API GatewayのベースURL
@@ -85,3 +150,12 @@ Outputs:
     Value: !Ref CampsTable
   CampItemsTableName:
     Value: !Ref CampItemsTable
+  FrontendBucketName:
+    Description: フロントエンドのビルド成果物をアップロードするS3バケット名
+    Value: !Ref FrontendBucket
+  FrontendDistributionId:
+    Description: デプロイ後にキャッシュ無効化するCloudFrontディストリビューションID
+    Value: !Ref FrontendDistribution
+  FrontendUrl:
+    Description: フロントエンドのアクセス先URL
+    Value: !Sub "https://${FrontendDistribution.DomainName}"
