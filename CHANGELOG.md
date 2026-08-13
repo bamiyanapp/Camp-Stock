@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.1.0...v1.2.0) (2026-08-13)
+
+
+### Features
+
+* **frontend:** トップページにビルド日時も表示する ([#16](https://github.com/bamiyanapp/Camp-Stock/issues/16)) ([cb1e4de](https://github.com/bamiyanapp/Camp-Stock/commit/cb1e4de67db7d8a3fbf8dc0b5bfe7951fcb321dc)), closes [#15](https://github.com/bamiyanapp/Camp-Stock/issues/15)
+
 # [1.1.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.0.0...v1.1.0) (2026-08-13)
 
 
