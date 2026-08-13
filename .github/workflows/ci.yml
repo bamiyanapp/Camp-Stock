@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: bamiyanapp/dev-standards/.github/workflows/reusable-ci.yml@v1.22.0
+    with:
+      frontend_dir: frontend
+      backend_dir: backend
+    secrets:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
