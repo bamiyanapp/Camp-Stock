@@ -15,6 +15,25 @@ Globals:
         CAMP_ITEMS_TABLE_NAME: !Ref CampItemsTable
 
 Resources:
+  # 明示的に定義し、CORS設定（プリフライトのOPTIONSをAPI Gateway側で自動応答）を
+  # 行う。POST/PUT/DELETEはContent-Type: application/jsonを伴うためCORSの
+  # シンプルリクエストの条件を満たさず、ブラウザがプリフライトリクエストを送信する。
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Sub "https://${FrontendDistribution.DomainName}"
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
   ItemsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -72,6 +91,7 @@ Resources:
         ProxyApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref HttpApi
             Path: /{proxy+}
             Method: ANY
 
@@ -143,7 +163,7 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: API GatewayのベースURL
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
   ItemsTableName:
     Value: !Ref ItemsTable
   CampsTableName:

@@ -13,7 +13,6 @@ function toApiResponse({ statusCode, body }) {
     statusCode,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
     },
     body: body === null || body === undefined ? "" : JSON.stringify(body),
   };
