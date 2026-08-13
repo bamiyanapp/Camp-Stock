@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Camp Stock - キャンプの持ち物管理アプリのバックエンド（Lambda + API Gateway + DynamoDB）
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: nodejs20.x
+    Environment:
+      Variables:
+        ITEMS_TABLE_NAME: !Ref ItemsTable
+        CAMPS_TABLE_NAME: !Ref CampsTable
+        CAMP_ITEMS_TABLE_NAME: !Ref CampItemsTable
+
+Resources:
+  ItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: camp-stock-items
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: itemId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: itemId
+          KeyType: HASH
+
+  CampsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: camp-stock-camps
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: campId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: campId
+          KeyType: HASH
+
+  CampItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: camp-stock-camp-items
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: campId
+          AttributeType: S
+        - AttributeName: itemId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: campId
+          KeyType: HASH
+        - AttributeName: itemId
+          KeyType: RANGE
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: camp-stock-api
+      CodeUri: ../backend
+      Handler: src/handler.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CampsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CampItemsTable
+      Events:
+        ProxyApi:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiEndpoint:
+    Description: API GatewayのベースURL
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  ItemsTableName:
+    Value: !Ref ItemsTable
+  CampsTableName:
+    Value: !Ref CampsTable
+  CampItemsTableName:
+    Value: !Ref CampItemsTable
