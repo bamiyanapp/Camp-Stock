@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.1...v1.2.2) (2026-08-13)
+
+
+### Bug Fixes
+
+* **cd:** デプロイ後もブラウザに古いビルドがキャッシュされ続ける問題を修正 ([#21](https://github.com/bamiyanapp/Camp-Stock/issues/21)) ([286e419](https://github.com/bamiyanapp/Camp-Stock/commit/286e419fb1f32049e0ff5bc8f24605e3d8eb029c)), closes [#20](https://github.com/bamiyanapp/Camp-Stock/issues/20)
+
 ## [1.2.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.0...v1.2.1) (2026-08-13)
 
 
