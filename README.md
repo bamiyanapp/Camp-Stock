@@ -84,6 +84,7 @@ sam deploy --guided
 ```sh
 cd frontend
 VITE_API_BASE_URL=<ApiEndpointの値> npm run build
-aws s3 sync dist s3://<FrontendBucketNameの値> --delete
+aws s3 sync dist s3://<FrontendBucketNameの値> --delete --cache-control "public, max-age=31536000, immutable" --exclude index.html
+aws s3 cp dist/index.html s3://<FrontendBucketNameの値>/index.html --cache-control "no-cache"
 aws cloudfront create-invalidation --distribution-id <FrontendDistributionIdの値> --paths "/*"
 ```
