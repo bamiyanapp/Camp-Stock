@@ -14,6 +14,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   define: {
     __APP_VERSION__: JSON.stringify(rootPackageVersion),
+    __APP_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
   // dev-standards submoduleからsymlinkで共有しているコンポーネント
   // （docs/shared-ui-components.md等）がnpmパッケージ（qrcode.react等）に
