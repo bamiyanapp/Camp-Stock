@@ -76,3 +76,54 @@ describe("createRouter", () => {
     expect(result).toEqual({ statusCode: 404, body: { message: "not found" } });
   });
 });
+
+describe("createRouter with authenticate", () => {
+  const routes = [
+    {
+      method: "GET",
+      path: "/camps",
+      handler: async ({ user }) => ({ statusCode: 200, body: { user } }),
+    },
+  ];
+
+  it("認証に成功した場合、userをハンドラへ渡す", async () => {
+    const authenticate = async () => ({ userId: "user-1" });
+    const router = createRouter(routes, { authenticate });
+    const result = await router.handleRequest({
+      method: "GET",
+      path: "/camps",
+      headers: { authorization: "Bearer valid-token" },
+      body: {},
+    });
+    expect(result).toEqual({ statusCode: 200, body: { user: { userId: "user-1" } } });
+  });
+
+  it("認証に失敗した場合、ハンドラを呼ばずエラーのstatusCodeを返す", async () => {
+    const authenticate = async () => {
+      const error = new Error("認証情報がありません");
+      error.statusCode = 401;
+      throw error;
+    };
+    const router = createRouter(routes, { authenticate });
+    const result = await router.handleRequest({
+      method: "GET",
+      path: "/camps",
+      headers: {},
+      body: {},
+    });
+    expect(result).toEqual({
+      statusCode: 401,
+      body: { message: "認証情報がありません" },
+    });
+  });
+
+  it("authenticateを渡さない場合はuser=nullでハンドラを呼ぶ（後方互換）", async () => {
+    const router = createRouter(routes);
+    const result = await router.handleRequest({
+      method: "GET",
+      path: "/camps",
+      body: {},
+    });
+    expect(result).toEqual({ statusCode: 200, body: { user: null } });
+  });
+});

@@ -3,6 +3,12 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Camp Stock - キャンプの持ち物管理アプリのバックエンド（Lambda + API Gateway + DynamoDB）
 
+Parameters:
+  GoogleClientId:
+    Type: String
+    Description: Google OAuth 2.0クライアントID（バックエンドでのIDトークンaudience検証に使用）
+    NoEcho: true
+
 Globals:
   Function:
     Timeout: 10
@@ -13,8 +19,28 @@ Globals:
         ITEMS_TABLE_NAME: !Ref ItemsTable
         CAMPS_TABLE_NAME: !Ref CampsTable
         CAMP_ITEMS_TABLE_NAME: !Ref CampItemsTable
+        GOOGLE_CLIENT_ID: !Ref GoogleClientId
 
 Resources:
+  # CORSはAPI Gateway（HTTP API）側で処理し、Lambda（backend/src/handler.js）は
+  # Access-Control-Allow-Originを付与しない。フロントエンドの配信元
+  # （CloudFrontドメイン）のみを許可する。
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Sub "https://${FrontendDistribution.DomainName}"
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
   ItemsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -72,6 +98,7 @@ Resources:
         ProxyApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref HttpApi
             Path: /{proxy+}
             Method: ANY
 
@@ -143,7 +170,7 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: API GatewayのベースURL
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
   ItemsTableName:
     Value: !Ref ItemsTable
   CampsTableName:
