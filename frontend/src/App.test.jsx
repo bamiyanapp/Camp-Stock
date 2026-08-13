@@ -21,4 +21,9 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "キャンプ一覧" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "持ち物マスタ" })).toBeInTheDocument();
   });
+
+  it("現在のアプリバージョンを表示する", () => {
+    render(<App />);
+    expect(screen.getByText(/^v\d+\.\d+\.\d+$/)).toBeInTheDocument();
+  });
 });

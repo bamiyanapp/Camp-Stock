@@ -21,7 +21,9 @@ function App() {
   return (
     <BrowserRouter>
       <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="mb-6 text-2xl font-bold">Camp Stock</h1>
+        <h1 className="mb-6 text-2xl font-bold">
+          Camp Stock <span className="text-sm font-normal opacity-60">v{__APP_VERSION__}</span>
+        </h1>
         <Navigation />
         <Routes>
           <Route path="/" element={<CampListPage />} />
