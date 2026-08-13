@@ -1,0 +1,12 @@
+{
+  "name": "camp-stock",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "lint": "commitlint --last --verbose"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.0"
+  }
+}
