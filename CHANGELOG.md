@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.0...v1.2.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* **backend:** POST/PUT/DELETEリクエストのCORSプリフライト失敗を修正 ([#18](https://github.com/bamiyanapp/Camp-Stock/issues/18)) ([892fcc4](https://github.com/bamiyanapp/Camp-Stock/commit/892fcc45d43dfbba3b2cfef05be7f7fdce5481d6)), closes [#17](https://github.com/bamiyanapp/Camp-Stock/issues/17)
+
 # [1.2.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.1.0...v1.2.0) (2026-08-13)
 
 
