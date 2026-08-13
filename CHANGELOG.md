@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.0.0...v1.1.0) (2026-08-13)
+
+
+### Features
+
+* **frontend:** トップページに現在のアプリバージョンを表示する ([#12](https://github.com/bamiyanapp/Camp-Stock/issues/12)) ([1a210da](https://github.com/bamiyanapp/Camp-Stock/commit/1a210dadc1c8d087c35d0dc92f455003af8c8e1b))
+
 # 1.0.0 (2026-08-13)
 
 
