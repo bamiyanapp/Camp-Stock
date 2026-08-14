@@ -41,10 +41,11 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
     {
       method: "POST",
       path: "/camps",
-      handler: async ({ body, user }) => ({
-        statusCode: 201,
-        body: await campsService.create(body, user?.userId),
-      }),
+      handler: async ({ body, user }) => {
+        const camp = await campsService.create(body, user?.userId);
+        await campItemsService.seedFromPreviousCamp(camp.campId, user?.userId);
+        return { statusCode: 201, body: camp };
+      },
     },
     {
       method: "GET",

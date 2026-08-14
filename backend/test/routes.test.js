@@ -225,4 +225,57 @@ describe("routes", () => {
     });
     expect(listAsUser1.body).toHaveLength(1);
   });
+
+  it("POST /camps: 前回のキャンプで今回使うにしていた持ち物を新しいキャンプへ自動で引き継ぐ", async () => {
+    const itemsRepository = createInMemoryItemsRepository();
+    const campsRepository = createInMemoryCampsRepository();
+    const campItemsRepository = createInMemoryCampItemsRepository();
+    const itemsService = createItemsService(itemsRepository);
+    const campsService = createCampsService(campsRepository);
+    const campItemsService = createCampItemsService({
+      itemsRepository,
+      campsRepository,
+      campItemsRepository,
+    });
+    const routes = buildRoutes({ itemsService, campsService, campItemsService });
+    const authenticatedRouter = createRouter(routes, {
+      authenticate: async () => ({ userId: "user-1" }),
+    });
+
+    const item = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/items",
+      headers: {},
+      body: { name: "テント", category: "住", vehicleType: "car" },
+    });
+    const firstCamp = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps",
+      headers: {},
+      body: { name: "夏キャンプ", vehicleType: "car" },
+    });
+    await authenticatedRouter.handleRequest({
+      method: "PUT",
+      path: `/camps/${firstCamp.body.campId}/items/${item.body.itemId}`,
+      headers: {},
+      body: { used: true },
+    });
+
+    const secondCamp = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps",
+      headers: {},
+      body: { name: "秋キャンプ", vehicleType: "car" },
+    });
+
+    const candidates = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: `/camps/${secondCamp.body.campId}/items`,
+      headers: {},
+      body: {},
+    });
+    const carried = candidates.body.find((c) => c.itemId === item.body.itemId);
+    expect(carried.used).toBe(true);
+    expect(carried.packed).toBe(false);
+  });
 });
