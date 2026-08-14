@@ -44,6 +44,8 @@ export const api = {
   listCamps: () => request("/camps"),
   createCamp: (camp) => request("/camps", { method: "POST", body: JSON.stringify(camp) }),
   getCamp: (campId) => request(`/camps/${campId}`),
+  updateCamp: (campId, camp) =>
+    request(`/camps/${campId}`, { method: "PUT", body: JSON.stringify(camp) }),
   deleteCamp: (campId) => request(`/camps/${campId}`, { method: "DELETE" }),
 
   listCampItems: (campId) => request(`/camps/${campId}/items`),

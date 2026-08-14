@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import CampListPage from "./CampListPage.jsx";
@@ -9,6 +9,7 @@ vi.mock("../api/client.js", () => ({
   api: {
     listCamps: vi.fn(),
     createCamp: vi.fn(),
+    updateCamp: vi.fn(),
     deleteCamp: vi.fn(),
   },
 }));
@@ -61,6 +62,29 @@ describe("CampListPage", () => {
 
     await waitFor(() => {
       expect(api.deleteCamp).toHaveBeenCalledWith("1");
+    });
+  });
+
+  it("編集ボタンでフォームに切り替わり、保存でupdateCampを呼ぶ", async () => {
+    const user = userEvent.setup();
+    api.updateCamp.mockResolvedValue({});
+    renderPage();
+    await screen.findByText("夏キャンプ（車）");
+
+    const campRow = screen.getByText("夏キャンプ（車）").closest("li");
+    await user.click(within(campRow).getByRole("button", { name: "編集" }));
+
+    const nameInput = screen.getByDisplayValue("夏キャンプ");
+    await user.clear(nameInput);
+    await user.type(nameInput, "夏キャンプ改");
+    await user.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => {
+      expect(api.updateCamp).toHaveBeenCalledWith("1", {
+        name: "夏キャンプ改",
+        date: "2026-08-01",
+        vehicleType: "car",
+      });
     });
   });
 });

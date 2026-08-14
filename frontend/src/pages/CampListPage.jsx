@@ -11,6 +11,10 @@ export default function CampListPage() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [vehicleType, setVehicleType] = useState("car");
+  const [editingCampId, setEditingCampId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editVehicleType, setEditVehicleType] = useState("car");
 
   function reload() {
     setLoading(true);
@@ -38,6 +42,32 @@ export default function CampListPage() {
   async function handleDelete(campId) {
     try {
       await api.deleteCamp(campId);
+      reload();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  function startEdit(camp) {
+    setEditingCampId(camp.campId);
+    setEditName(camp.name);
+    setEditDate(camp.date || "");
+    setEditVehicleType(camp.vehicleType);
+  }
+
+  function cancelEdit() {
+    setEditingCampId(null);
+  }
+
+  async function handleUpdate(event, campId) {
+    event.preventDefault();
+    try {
+      await api.updateCamp(campId, {
+        name: editName,
+        date: editDate || null,
+        vehicleType: editVehicleType,
+      });
+      setEditingCampId(null);
       reload();
     } catch (err) {
       setError(err.message);
@@ -79,23 +109,74 @@ export default function CampListPage() {
         <p>読み込み中...</p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {camps.map((camp) => (
-            <li key={camp.campId} className="card bg-base-200 p-4">
-              <div className="flex items-center justify-between">
-                <Link to={`/camps/${camp.campId}`} className="link link-primary">
-                  {camp.name}（{VEHICLE_LABELS[camp.vehicleType]}）
-                </Link>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-ghost"
-                  onClick={() => handleDelete(camp.campId)}
+          {camps.map((camp) =>
+            editingCampId === camp.campId ? (
+              <li key={camp.campId} className="card bg-base-200 p-4">
+                <form
+                  onSubmit={(e) => handleUpdate(e, camp.campId)}
+                  className="flex flex-col gap-2"
                 >
-                  削除
-                </button>
-              </div>
-              {camp.date && <p className="text-sm opacity-70">{camp.date}</p>}
-            </li>
-          ))}
+                  <input
+                    className="input input-bordered"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="input input-bordered"
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                  />
+                  <select
+                    className="select select-bordered"
+                    value={editVehicleType}
+                    onChange={(e) => setEditVehicleType(e.target.value)}
+                  >
+                    <option value="car">車</option>
+                    <option value="bike">バイク</option>
+                  </select>
+                  <div className="flex gap-2">
+                    <button type="submit" className="btn btn-sm btn-primary">
+                      保存
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost"
+                      onClick={cancelEdit}
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </form>
+              </li>
+            ) : (
+              <li key={camp.campId} className="card bg-base-200 p-4">
+                <div className="flex items-center justify-between">
+                  <Link to={`/camps/${camp.campId}`} className="link link-primary">
+                    {camp.name}（{VEHICLE_LABELS[camp.vehicleType]}）
+                  </Link>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => startEdit(camp)}
+                    >
+                      編集
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => handleDelete(camp.campId)}
+                    >
+                      削除
+                    </button>
+                  </div>
+                </div>
+                {camp.date && <p className="text-sm opacity-70">{camp.date}</p>}
+              </li>
+            )
+          )}
         </ul>
       )}
     </div>
