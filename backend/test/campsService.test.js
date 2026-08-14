@@ -42,4 +42,51 @@ describe("campsService", () => {
     await service.remove(created.campId);
     expect(await service.list()).toEqual([]);
   });
+
+  it("create: ownerUserIdを記録する", async () => {
+    const camp = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    expect(camp.ownerUserId).toBe("user-1");
+  });
+
+  it("list: リクエストしたユーザーが作成したキャンプのみを返す", async () => {
+    await service.create({ name: "user1のキャンプ", vehicleType: "car" }, "user-1");
+    await service.create({ name: "user2のキャンプ", vehicleType: "car" }, "user-2");
+
+    const list = await service.list("user-1");
+    expect(list).toHaveLength(1);
+    expect(list[0].name).toBe("user1のキャンプ");
+  });
+
+  it("get: 他ユーザーが所有するキャンプはForbiddenErrorを投げる", async () => {
+    const created = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    await expect(service.get(created.campId, "user-2")).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
+
+  it("update: 他ユーザーが所有するキャンプはForbiddenErrorを投げる", async () => {
+    const created = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    await expect(
+      service.update(created.campId, { name: "改変", vehicleType: "car" }, "user-2")
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("remove: 他ユーザーが所有するキャンプはForbiddenErrorを投げる", async () => {
+    const created = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    await expect(service.remove(created.campId, "user-2")).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
 });

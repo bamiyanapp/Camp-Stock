@@ -138,4 +138,65 @@ describe("routes", () => {
     });
     expect(result.statusCode).toBe(404);
   });
+
+  it("キャンプは所有ユーザーごとに分離される", async () => {
+    const itemsRepository = createInMemoryItemsRepository();
+    const campsRepository = createInMemoryCampsRepository();
+    const campItemsRepository = createInMemoryCampItemsRepository();
+    const itemsService = createItemsService(itemsRepository);
+    const campsService = createCampsService(campsRepository);
+    const campItemsService = createCampItemsService({
+      itemsRepository,
+      campsRepository,
+      campItemsRepository,
+    });
+    const routes = buildRoutes({ itemsService, campsService, campItemsService });
+    let currentUserId;
+    const authenticatedRouter = createRouter(routes, {
+      authenticate: async () => ({ userId: currentUserId }),
+    });
+
+    currentUserId = "user-1";
+    const created = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps",
+      headers: {},
+      body: { name: "user-1のキャンプ", vehicleType: "car" },
+    });
+    expect(created.body.ownerUserId).toBe("user-1");
+
+    currentUserId = "user-2";
+    const listAsUser2 = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: "/camps",
+      headers: {},
+      body: {},
+    });
+    expect(listAsUser2.body).toEqual([]);
+
+    const getAsUser2 = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: `/camps/${created.body.campId}`,
+      headers: {},
+      body: {},
+    });
+    expect(getAsUser2.statusCode).toBe(403);
+
+    const deleteAsUser2 = await authenticatedRouter.handleRequest({
+      method: "DELETE",
+      path: `/camps/${created.body.campId}`,
+      headers: {},
+      body: {},
+    });
+    expect(deleteAsUser2.statusCode).toBe(403);
+
+    currentUserId = "user-1";
+    const listAsUser1 = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: "/camps",
+      headers: {},
+      body: {},
+    });
+    expect(listAsUser1.body).toHaveLength(1);
+  });
 });

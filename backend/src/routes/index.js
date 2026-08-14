@@ -33,37 +33,40 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
     {
       method: "GET",
       path: "/camps",
-      handler: async () => ({ statusCode: 200, body: await campsService.list() }),
+      handler: async ({ user }) => ({
+        statusCode: 200,
+        body: await campsService.list(user?.userId),
+      }),
     },
     {
       method: "POST",
       path: "/camps",
-      handler: async ({ body }) => ({
+      handler: async ({ body, user }) => ({
         statusCode: 201,
-        body: await campsService.create(body),
+        body: await campsService.create(body, user?.userId),
       }),
     },
     {
       method: "GET",
       path: "/camps/{campId}",
-      handler: async ({ params }) => ({
+      handler: async ({ params, user }) => ({
         statusCode: 200,
-        body: await campsService.get(params.campId),
+        body: await campsService.get(params.campId, user?.userId),
       }),
     },
     {
       method: "PUT",
       path: "/camps/{campId}",
-      handler: async ({ params, body }) => ({
+      handler: async ({ params, body, user }) => ({
         statusCode: 200,
-        body: await campsService.update(params.campId, body),
+        body: await campsService.update(params.campId, body, user?.userId),
       }),
     },
     {
       method: "DELETE",
       path: "/camps/{campId}",
-      handler: async ({ params }) => {
-        await campsService.remove(params.campId);
+      handler: async ({ params, user }) => {
+        await campsService.remove(params.campId, user?.userId);
         return { statusCode: 204, body: null };
       },
     },
@@ -71,27 +74,29 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
     {
       method: "GET",
       path: "/camps/{campId}/items",
-      handler: async ({ params }) => ({
+      handler: async ({ params, user }) => ({
         statusCode: 200,
-        body: await campItemsService.listForCamp(params.campId),
+        body: await campItemsService.listForCamp(params.campId, user?.userId),
       }),
     },
     {
       method: "PUT",
       path: "/camps/{campId}/items/{itemId}",
-      handler: async ({ params, body }) => {
+      handler: async ({ params, body, user }) => {
         if (typeof body.used === "boolean") {
           const result = await campItemsService.setUsed(
             params.campId,
             params.itemId,
-            body.used
+            body.used,
+            user?.userId
           );
           return { statusCode: 200, body: result };
         }
         const result = await campItemsService.setPacked(
           params.campId,
           params.itemId,
-          Boolean(body.packed)
+          Boolean(body.packed),
+          user?.userId
         );
         return { statusCode: 200, body: result };
       },
@@ -99,8 +104,8 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
     {
       method: "DELETE",
       path: "/camps/{campId}/items/{itemId}",
-      handler: async ({ params }) => {
-        await campItemsService.setUsed(params.campId, params.itemId, false);
+      handler: async ({ params, user }) => {
+        await campItemsService.setUsed(params.campId, params.itemId, false, user?.userId);
         return { statusCode: 204, body: null };
       },
     },
