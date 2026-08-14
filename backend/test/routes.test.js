@@ -51,6 +51,32 @@ describe("routes", () => {
     expect(listed.body[0].name).toBe("テント");
   });
 
+  it("POST /items でuser情報がある場合、createdBy/updatedByに記録される", async () => {
+    const itemsRepository = createInMemoryItemsRepository();
+    const campsRepository = createInMemoryCampsRepository();
+    const campItemsRepository = createInMemoryCampItemsRepository();
+    const itemsService = createItemsService(itemsRepository);
+    const campsService = createCampsService(campsRepository);
+    const campItemsService = createCampItemsService({
+      itemsRepository,
+      campsRepository,
+      campItemsRepository,
+    });
+    const authenticatedRouter = createRouter(
+      buildRoutes({ itemsService, campsService, campItemsService }),
+      { authenticate: async () => ({ userId: "user-1" }) }
+    );
+
+    const created = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/items",
+      headers: {},
+      body: { name: "テント", category: "住", vehicleType: "car" },
+    });
+    expect(created.body.createdBy).toBe("user-1");
+    expect(created.body.updatedBy).toBe("user-1");
+  });
+
   it("PUT /items/{itemId} で持ち物マスタを更新する", async () => {
     const created = await router.handleRequest({
       method: "POST",

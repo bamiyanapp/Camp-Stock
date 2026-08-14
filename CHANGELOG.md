@@ -1,3 +1,17 @@
+# [1.6.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.5.0...v1.6.0) (2026-08-14)
+
+
+### Features
+
+* **cd:** GOOGLE_OAUTH_CLIENT_IDの形式検証とハッシュ記録を追加 ([#36](https://github.com/bamiyanapp/Camp-Stock/issues/36)) ([b8dfbd4](https://github.com/bamiyanapp/Camp-Stock/commit/b8dfbd4b0338202ddf668ff660412f1693dfdaa6)), closes [#35](https://github.com/bamiyanapp/Camp-Stock/issues/35)
+
+# [1.5.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.4.1...v1.5.0) (2026-08-14)
+
+
+### Features
+
+* **backend:** 持ち物マスタに編集ユーザー情報を保持する ([#30](https://github.com/bamiyanapp/Camp-Stock/issues/30)) ([6efd09d](https://github.com/bamiyanapp/Camp-Stock/commit/6efd09dc6055f61b30f12969af167e6a546565c2)), closes [#14](https://github.com/bamiyanapp/Camp-Stock/issues/14)
+
 ## [1.4.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.4.0...v1.4.1) (2026-08-14)
 
 
