@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.7.2...v1.8.0) (2026-08-14)
+
+
+### Features
+
+* **frontend:** 自動ログアウトの理由をログイン画面に表示する ([#47](https://github.com/bamiyanapp/Camp-Stock/issues/47)) ([fcb40e6](https://github.com/bamiyanapp/Camp-Stock/commit/fcb40e6e3ff966db3e8d40cf18a8910c2854aa11)), closes [#45](https://github.com/bamiyanapp/Camp-Stock/issues/45)
+
 ## [1.7.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.7.1...v1.7.2) (2026-08-14)
 
 
