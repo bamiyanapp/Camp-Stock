@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.7.0...v1.7.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **frontend:** Googleログイン失敗時のエラーを画面に表示する ([#39](https://github.com/bamiyanapp/Camp-Stock/issues/39)) ([b816fd2](https://github.com/bamiyanapp/Camp-Stock/commit/b816fd2db6222db351b1b110bbf4f95eb688cd5d)), closes [#38](https://github.com/bamiyanapp/Camp-Stock/issues/38)
+
 # [1.7.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.6.0...v1.7.0) (2026-08-14)
 
 
