@@ -3,7 +3,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "./useAuth.js";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, authError } = useAuth();
   const [error, setError] = useState(null);
 
   function handleSuccess(credentialResponse) {
@@ -15,10 +15,12 @@ export default function LoginPage() {
     login(credentialResponse.credential);
   }
 
+  const displayedError = error || authError;
+
   return (
     <div className="flex flex-col items-center gap-4 py-20">
       <p>Camp Stockを利用するにはGoogleアカウントでログインしてください</p>
-      {error && <p className="text-error">{error}</p>}
+      {displayedError && <p className="text-error">{displayedError}</p>}
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={() => setError("ログインに失敗しました。もう一度お試しください。")}

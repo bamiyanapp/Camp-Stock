@@ -20,7 +20,8 @@ async function request(path, options = {}) {
   }
   const response = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   if (response.status === 401) {
-    onUnauthorized?.();
+    const body = await response.json().catch(() => ({}));
+    onUnauthorized?.(body.message || "認証情報が無効です");
     throw new Error("ログインが必要です");
   }
   if (!response.ok) {
