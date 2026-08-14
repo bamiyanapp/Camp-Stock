@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.4.0...v1.4.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **cd:** GitHub SecretsのGOOGLE_CLIENT_ID参照名を実際の登録名に修正 ([#27](https://github.com/bamiyanapp/Camp-Stock/issues/27)) ([eab11e7](https://github.com/bamiyanapp/Camp-Stock/commit/eab11e7a16f8f3e51d80037f4a135f1a0d2416da)), closes [#26](https://github.com/bamiyanapp/Camp-Stock/issues/26)
+
 # [1.4.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.3.0...v1.4.0) (2026-08-14)
 
 
