@@ -78,6 +78,12 @@ export default function CampDetailPage() {
         使用予定 {usedCount}件中 {packedCount}件 積み込み済み
       </p>
 
+      <div className="mb-2 grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-3 px-2 text-xs font-semibold opacity-70">
+        <span className="text-center">今回使う</span>
+        <span>品名</span>
+        <span className="text-center">積んだ</span>
+      </div>
+
       {groupByCategory(items).map(([category, categoryItems]) => (
         <section key={category} className="mb-6">
           <h3 className="mb-2 font-semibold">{category}</h3>
@@ -85,30 +91,26 @@ export default function CampDetailPage() {
             {categoryItems.map((item) => (
               <li
                 key={item.itemId}
-                className="flex items-center gap-3 rounded bg-base-200 p-2"
+                className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-3 rounded bg-base-200 p-2"
               >
-                <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="checkbox justify-self-center"
+                  checked={item.used}
+                  aria-label={`${item.name}を今回使う`}
+                  onChange={(e) => handleToggleUsed(item.itemId, e.target.checked)}
+                />
+                <span>{item.name}</span>
+                {item.used ? (
                   <input
                     type="checkbox"
-                    className="checkbox"
-                    checked={item.used}
-                    onChange={(e) => handleToggleUsed(item.itemId, e.target.checked)}
+                    className="checkbox justify-self-center"
+                    checked={item.packed}
+                    aria-label={`${item.name}を積んだ`}
+                    onChange={(e) => handleTogglePacked(item.itemId, e.target.checked)}
                   />
-                  今回使う
-                </label>
-                <span className="flex-1">{item.name}</span>
-                {item.used && (
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="checkbox"
-                      checked={item.packed}
-                      onChange={(e) =>
-                        handleTogglePacked(item.itemId, e.target.checked)
-                      }
-                    />
-                    積んだ
-                  </label>
+                ) : (
+                  <span />
                 )}
               </li>
             ))}
