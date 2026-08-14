@@ -43,6 +43,32 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # GOOGLE_OAUTH_CLIENT_IDの値そのものはClaude（このリポジトリを操作するAI）
+      # からは確認できない（Secretsは書き込み専用、フロントエンド配信元への
+      # 直接アクセスも開発環境の制約上できない）。形式チェックとハッシュの
+      # 記録により、値の異常や「更新したつもりが反映されていない」を
+      # スマートフォンのJob Summaryから確認できるようにする。
+      - name: Validate GOOGLE_OAUTH_CLIENT_ID
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+        run: |
+          if [[ -z "$GOOGLE_CLIENT_ID" ]]; then
+            echo "::error::GOOGLE_OAUTH_CLIENT_ID が設定されていません（Secretsが空、または未登録です）"
+            exit 1
+          fi
+          if [[ ! "$GOOGLE_CLIENT_ID" =~ ^[0-9]+-[a-zA-Z0-9]+\.apps\.googleusercontent\.com$ ]]; then
+            echo "::error::GOOGLE_OAUTH_CLIENT_ID の形式が不正です。Google Cloud Console の「クライアントID」欄の値（*.apps.googleusercontent.com 形式）と一致しているか確認してください（Client Secretと取り違えていないか等）"
+            exit 1
+          fi
+          hash_prefix=$(printf '%s' "$GOOGLE_CLIENT_ID" | sha256sum | cut -c1-8)
+          {
+            echo "## GOOGLE_OAUTH_CLIENT_ID検証"
+            echo ""
+            echo "- 形式チェック: OK"
+            echo "- ハッシュ（先頭8文字、値そのものではない）: \`$hash_prefix\`"
+            echo "- 前回デプロイ時と異なる値であるべきか確認する場合は、この値を前回のJob Summaryと比較してください"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Build backend (SAM)
         working-directory: infra
         run: sam build
