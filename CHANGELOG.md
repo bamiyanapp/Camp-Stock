@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.12.0...v1.13.0) (2026-08-14)
+
+
+### Features
+
+* キャンプ作成時に「今回使う」を全件デフォルトONにし、選択編集を別画面に分離する ([#69](https://github.com/bamiyanapp/Camp-Stock/issues/69)) ([b458a82](https://github.com/bamiyanapp/Camp-Stock/commit/b458a82325e790101f0b3bc97f21e49171cbb9b5))
+
 # [1.12.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.11.1...v1.12.0) (2026-08-14)
 
 
