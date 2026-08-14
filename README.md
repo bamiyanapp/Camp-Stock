@@ -52,6 +52,8 @@ cd backend && npm install && npm run lint && npm test
 
 `backend/seed/items-seed.json` に、既存スプレッドシートから移行した持ち物マスタの初期データ（約150件）を収録している。`backend/seed/seed-items.js` で DynamoDB へ投入できる（AWS認証情報とテーブル名の環境変数が必要）。
 
+GitHub Actionsの`Seed items master data`ワークフロー（`.github/workflows/seed-items.yml`）から、CDと同じGitHub SecretsのAWS認証情報を使って手動実行できる（GitHubのActionsタブ→対象ワークフロー→「Run workflow」）。`itemId`をキーにしたPutItemのため、再実行しても重複せず上書きされる。
+
 ```sh
 cd backend
 ITEMS_TABLE_NAME=camp-stock-items node seed/seed-items.js
