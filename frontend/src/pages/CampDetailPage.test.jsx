@@ -9,7 +9,6 @@ vi.mock("../api/client.js", () => ({
   api: {
     getCamp: vi.fn(),
     listCampItems: vi.fn(),
-    setCampItemUsed: vi.fn(),
     setCampItemPacked: vi.fn(),
   },
 }));
@@ -52,49 +51,40 @@ describe("CampDetailPage", () => {
     ]);
   });
 
-  it("キャンプ名とカテゴリ別の持ち物候補を表示する", async () => {
+  it("キャンプ名と「今回使う」持ち物のみをカテゴリ別に表示する", async () => {
     renderPage();
     expect(await screen.findByText("夏キャンプ（車）")).toBeInTheDocument();
-    expect(screen.getByText("住")).toBeInTheDocument();
-    expect(screen.getByText("テント")).toBeInTheDocument();
     expect(screen.getByText("携帯品")).toBeInTheDocument();
     expect(screen.getByText("さいふ")).toBeInTheDocument();
+    // used=falseの「テント」は一覧に表示されない
+    expect(screen.queryByText("テント")).not.toBeInTheDocument();
+    expect(screen.queryByText("住")).not.toBeInTheDocument();
   });
 
-  it("「今回使う」「積んだ」の表記はヘッダーに一度だけ表示し、各行には表示しない", async () => {
+  it("「持ち物を選ぶ」リンクで選択画面へ遷移できる", async () => {
     renderPage();
-    await screen.findByText("テント");
-    expect(screen.getAllByText("今回使う")).toHaveLength(1);
-    expect(screen.getAllByText("積んだ")).toHaveLength(1);
+    await screen.findByText("夏キャンプ（車）");
+    expect(screen.getByRole("link", { name: "持ち物を選ぶ" })).toHaveAttribute(
+      "href",
+      "/camps/camp-1/select-items"
+    );
   });
 
-  it("used=falseのアイテムには積み込みチェックボックスを表示しない", async () => {
+  it("「今回使う」持ち物が1件も無い場合、案内文を表示する", async () => {
+    api.listCampItems.mockResolvedValue([]);
     renderPage();
-    await screen.findByText("テント");
-    const tentRow = screen.getByText("テント").closest("li");
-    expect(tentRow.querySelectorAll('input[type="checkbox"]')).toHaveLength(1);
+    await screen.findByText("夏キャンプ（車）");
+    expect(
+      screen.getByText("今回使う持ち物がまだ選択されていません。「持ち物を選ぶ」から選択してください。")
+    ).toBeInTheDocument();
   });
 
-  it("used=trueのアイテムには積み込みチェックボックスを表示する", async () => {
+  it("各行には「今回使う」チェックボックスを表示せず、「積んだ」チェックボックスのみ表示する", async () => {
     renderPage();
     await screen.findByText("さいふ");
     const walletRow = screen.getByText("さいふ").closest("li");
-    expect(walletRow.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
-  });
-
-  it("「今回使う」チェックボックスでsetCampItemUsedを呼ぶ", async () => {
-    const user = userEvent.setup();
-    api.setCampItemUsed.mockResolvedValue({});
-    renderPage();
-    await screen.findByText("テント");
-
-    const tentRow = screen.getByText("テント").closest("li");
-    const checkbox = tentRow.querySelector('input[type="checkbox"]');
-    await user.click(checkbox);
-
-    await waitFor(() => {
-      expect(api.setCampItemUsed).toHaveBeenCalledWith("camp-1", "item-1", true);
-    });
+    expect(walletRow.querySelectorAll('input[type="checkbox"]')).toHaveLength(1);
+    expect(screen.queryByLabelText("さいふを今回使う")).not.toBeInTheDocument();
   });
 
   it("「積んだ」チェックボックスでsetCampItemPackedを呼ぶ", async () => {
@@ -104,8 +94,8 @@ describe("CampDetailPage", () => {
     await screen.findByText("さいふ");
 
     const walletRow = screen.getByText("さいふ").closest("li");
-    const checkboxes = walletRow.querySelectorAll('input[type="checkbox"]');
-    await user.click(checkboxes[1]);
+    const checkbox = walletRow.querySelector('input[type="checkbox"]');
+    await user.click(checkbox);
 
     await waitFor(() => {
       expect(api.setCampItemPacked).toHaveBeenCalledWith("camp-1", "item-2", true);

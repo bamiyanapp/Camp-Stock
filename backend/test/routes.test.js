@@ -125,14 +125,7 @@ describe("routes", () => {
       body: {},
     });
     expect(candidates.body).toHaveLength(1);
-    expect(candidates.body[0].used).toBe(false);
-
-    const usedResult = await router.handleRequest({
-      method: "PUT",
-      path: `/camps/${camp.body.campId}/items/${item.body.itemId}`,
-      body: { used: true },
-    });
-    expect(usedResult.body.used).toBe(true);
+    expect(candidates.body[0].used).toBe(true);
 
     const packedResult = await router.handleRequest({
       method: "PUT",
@@ -154,6 +147,13 @@ describe("routes", () => {
       body: {},
     });
     expect(afterRemoval.body[0].used).toBe(false);
+
+    const reAdded = await router.handleRequest({
+      method: "PUT",
+      path: `/camps/${camp.body.campId}/items/${item.body.itemId}`,
+      body: { used: true },
+    });
+    expect(reAdded.body.used).toBe(true);
   });
 
   it("存在しないcampIdへのアクセスは404相当（NotFoundErrorのstatusCode）を返す", async () => {
@@ -226,7 +226,7 @@ describe("routes", () => {
     expect(listAsUser1.body).toHaveLength(1);
   });
 
-  it("POST /camps: 前回のキャンプで今回使うにしていた持ち物を新しいキャンプへ自動で引き継ぐ", async () => {
+  it("POST /camps: 作成時に移動手段が対応する持ち物マスタ全件を今回使う状態にする", async () => {
     const itemsRepository = createInMemoryItemsRepository();
     const campsRepository = createInMemoryCampsRepository();
     const campItemsRepository = createInMemoryCampItemsRepository();
@@ -242,40 +242,37 @@ describe("routes", () => {
       authenticate: async () => ({ userId: "user-1" }),
     });
 
-    const item = await authenticatedRouter.handleRequest({
+    const carItem = await authenticatedRouter.handleRequest({
       method: "POST",
       path: "/items",
       headers: {},
       body: { name: "テント", category: "住", vehicleType: "car" },
     });
-    const firstCamp = await authenticatedRouter.handleRequest({
+    const bikeItem = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/items",
+      headers: {},
+      body: { name: "タンクバッグ", category: "携帯品", vehicleType: "bike" },
+    });
+
+    const camp = await authenticatedRouter.handleRequest({
       method: "POST",
       path: "/camps",
       headers: {},
       body: { name: "夏キャンプ", vehicleType: "car" },
     });
-    await authenticatedRouter.handleRequest({
-      method: "PUT",
-      path: `/camps/${firstCamp.body.campId}/items/${item.body.itemId}`,
-      headers: {},
-      body: { used: true },
-    });
-
-    const secondCamp = await authenticatedRouter.handleRequest({
-      method: "POST",
-      path: "/camps",
-      headers: {},
-      body: { name: "秋キャンプ", vehicleType: "car" },
-    });
 
     const candidates = await authenticatedRouter.handleRequest({
       method: "GET",
-      path: `/camps/${secondCamp.body.campId}/items`,
+      path: `/camps/${camp.body.campId}/items`,
       headers: {},
       body: {},
     });
-    const carried = candidates.body.find((c) => c.itemId === item.body.itemId);
-    expect(carried.used).toBe(true);
-    expect(carried.packed).toBe(false);
+    const carCandidate = candidates.body.find((c) => c.itemId === carItem.body.itemId);
+    expect(carCandidate.used).toBe(true);
+    expect(carCandidate.packed).toBe(false);
+    expect(
+      candidates.body.find((c) => c.itemId === bikeItem.body.itemId)
+    ).toBeUndefined();
   });
 });

@@ -39,7 +39,7 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 | PUT | `/items/{itemId}` | 持ち物マスタ更新 |
 | DELETE | `/items/{itemId}` | 持ち物マスタ削除 |
 | GET | `/camps` | キャンプ一覧 |
-| POST | `/camps` | キャンプ作成。直近の自分のキャンプで「今回使う」だった持ち物（移動手段が対応するもののみ）を自動的に引き継ぐ |
+| POST | `/camps` | キャンプ作成。移動手段が対応する持ち物マスタ全件を自動的に「今回使う」状態にする |
 | GET | `/camps/{campId}` | キャンプ取得 |
 | PUT | `/camps/{campId}` | キャンプ更新 |
 | DELETE | `/camps/{campId}` | キャンプ削除 |

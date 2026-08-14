@@ -43,7 +43,7 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
       path: "/camps",
       handler: async ({ body, user }) => {
         const camp = await campsService.create(body, user?.userId);
-        await campItemsService.seedFromPreviousCamp(camp.campId, user?.userId);
+        await campItemsService.seedAllMatchingItems(camp.campId);
         return { statusCode: 201, body: camp };
       },
     },

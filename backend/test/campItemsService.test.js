@@ -122,76 +122,32 @@ describe("campItemsService", () => {
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  it("seedFromPreviousCamp: 直近の別キャンプで今回使うにしていた持ち物を、移動手段が対応するものに限り引き継ぐ", async () => {
-    await service.setUsed("camp-1", "item-car", true, "user-1");
-    await service.setUsed("camp-1", "item-both", true, "user-1");
-    const newCamp = {
-      campId: "camp-2",
-      name: "秋キャンプ",
-      vehicleType: "bike",
-      ownerUserId: "user-1",
-      createdAt: "2026-02-01T00:00:00.000Z",
-    };
-    await campsRepository.put(newCamp);
+  it("seedAllMatchingItems: キャンプの移動手段に対応する持ち物マスタ全件をused: trueにする", async () => {
+    await service.seedAllMatchingItems("camp-1");
 
-    await service.seedFromPreviousCamp("camp-2", "user-1");
-
-    const list = await service.listForCamp("camp-2", "user-1");
+    const list = await service.listForCamp("camp-1", "user-1");
     const carItemResult = list.find((r) => r.itemId === "item-car");
     const bothItemResult = list.find((r) => r.itemId === "item-both");
-    expect(carItemResult).toBeUndefined(); // bikeキャンプの候補にそもそも出てこない
+    expect(carItemResult.used).toBe(true);
     expect(bothItemResult.used).toBe(true);
   });
 
-  it("seedFromPreviousCamp: packed（積み込み状態）は引き継がない", async () => {
-    await service.setUsed("camp-1", "item-both", true, "user-1");
-    await service.setPacked("camp-1", "item-both", true, "user-1");
-    const newCamp = {
-      campId: "camp-2",
-      name: "秋キャンプ",
-      vehicleType: "car",
-      ownerUserId: "user-1",
-      createdAt: "2026-02-01T00:00:00.000Z",
-    };
-    await campsRepository.put(newCamp);
+  it("seedAllMatchingItems: 対応しない移動手段の持ち物は候補にそもそも出てこない", async () => {
+    await service.seedAllMatchingItems("camp-1");
 
-    await service.seedFromPreviousCamp("camp-2", "user-1");
-
-    const list = await service.listForCamp("camp-2", "user-1");
-    const bothItemResult = list.find((r) => r.itemId === "item-both");
-    expect(bothItemResult.used).toBe(true);
-    expect(bothItemResult.packed).toBe(false);
-  });
-
-  it("seedFromPreviousCamp: 直近キャンプが存在しない場合は何もしない", async () => {
-    await expect(
-      service.seedFromPreviousCamp("camp-1", "user-1")
-    ).resolves.toBeUndefined();
     const list = await service.listForCamp("camp-1", "user-1");
-    expect(list.every((r) => r.used === false)).toBe(true);
+    expect(list.find((r) => r.itemId === "item-bike")).toBeUndefined();
   });
 
-  it("seedFromPreviousCamp: 他ユーザーのキャンプは直近キャンプとみなさない", async () => {
-    await service.setUsed("camp-1", "item-both", true, "user-1");
-    const otherUsersNewCamp = {
-      campId: "camp-2",
-      name: "他ユーザーのキャンプ",
-      vehicleType: "car",
-      ownerUserId: "user-2",
-      createdAt: "2026-02-01T00:00:00.000Z",
-    };
-    await campsRepository.put(otherUsersNewCamp);
+  it("seedAllMatchingItems: packed（積み込み状態）は常にfalseで初期化する", async () => {
+    await service.seedAllMatchingItems("camp-1");
 
-    await service.seedFromPreviousCamp("camp-2", "user-2");
-
-    const list = await service.listForCamp("camp-2", "user-2");
-    expect(list.every((r) => r.used === false)).toBe(true);
+    const list = await service.listForCamp("camp-1", "user-1");
+    expect(list.every((r) => r.packed === false)).toBe(true);
   });
 
-  it("seedFromPreviousCamp: 存在しないcampIdならNotFoundErrorを投げる", async () => {
-    await expect(
-      service.seedFromPreviousCamp("missing", "user-1")
-    ).rejects.toThrow(/not found/);
+  it("seedAllMatchingItems: 存在しないcampIdならNotFoundErrorを投げる", async () => {
+    await expect(service.seedAllMatchingItems("missing")).rejects.toThrow(/not found/);
   });
 
   it("setUsed(false): 使用を解除すると積み込み状態もリセットされる", async () => {
