@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.3...v1.3.0) (2026-08-14)
+
+
+### Features
+
+* **cd:** 持ち物マスタの初期データをDynamoDBへ投入するワークフローを追加 ([#25](https://github.com/bamiyanapp/Camp-Stock/issues/25)) ([6820f22](https://github.com/bamiyanapp/Camp-Stock/commit/6820f22d5d58ae6e845cd7119cc4c21b43011cae)), closes [#24](https://github.com/bamiyanapp/Camp-Stock/issues/24)
+
 ## [1.2.3](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.2...v1.2.3) (2026-08-14)
 
 
