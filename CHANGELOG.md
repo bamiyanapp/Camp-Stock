@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.7.1...v1.7.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **frontend:** authTokenの同期をuseEffectから同期的な呼び出しへ変更 ([#44](https://github.com/bamiyanapp/Camp-Stock/issues/44)) ([29c442b](https://github.com/bamiyanapp/Camp-Stock/commit/29c442bb6b36d25b50121ef2e340ad42c19e78d9)), closes [#43](https://github.com/bamiyanapp/Camp-Stock/issues/43)
+
 ## [1.7.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.7.0...v1.7.1) (2026-08-14)
 
 
