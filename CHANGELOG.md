@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.9.1...v1.10.0) (2026-08-14)
+
+
+### Features
+
+* **backend:** 新しいキャンプ作成時に前回の「今回使う」持ち物を引き継ぐ ([#56](https://github.com/bamiyanapp/Camp-Stock/issues/56)) ([8699c94](https://github.com/bamiyanapp/Camp-Stock/commit/8699c9490995affb50f3ab371ac08e9fc516aeef)), closes [#54](https://github.com/bamiyanapp/Camp-Stock/issues/54)
+
 ## [1.9.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.9.0...v1.9.1) (2026-08-14)
 
 
