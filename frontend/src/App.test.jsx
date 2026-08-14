@@ -14,9 +14,19 @@ function fakeIdToken(payload) {
   return `${base64UrlEncode({ alg: "none" })}.${base64UrlEncode(payload)}.signature`;
 }
 
+// AuthContextはセッションをCookieに保存するため、localStorageではなく
+// document.cookieにログイン状態を積んでからレンダリングする。
+function setSessionCookie(token) {
+  document.cookie = `${STORAGE_KEY}=${encodeURIComponent(token)}; Path=/`;
+}
+
+function clearSessionCookie() {
+  document.cookie = `${STORAGE_KEY}=; Path=/; Max-Age=0`;
+}
+
 describe("App", () => {
   beforeEach(() => {
-    localStorage.clear();
+    clearSessionCookie();
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -30,15 +40,14 @@ describe("App", () => {
   });
 
   it("キャンプ一覧・持ち物マスタへのナビゲーションを表示する", () => {
-    localStorage.setItem(STORAGE_KEY, fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
     render(<App />);
     expect(screen.getByRole("link", { name: "キャンプ一覧" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "持ち物マスタ" })).toBeInTheDocument();
   });
 
   it("pictureがある場合、アカウント画像を表示する", () => {
-    localStorage.setItem(
-      STORAGE_KEY,
+    setSessionCookie(
       fakeIdToken({
         name: "Test User",
         email: "test@example.com",
@@ -51,8 +60,7 @@ describe("App", () => {
   });
 
   it("画像の読み込みに失敗した場合、テキスト表記にフォールバックする", () => {
-    localStorage.setItem(
-      STORAGE_KEY,
+    setSessionCookie(
       fakeIdToken({
         name: "Test User",
         email: "test@example.com",
@@ -66,19 +74,30 @@ describe("App", () => {
   });
 
   it("pictureが無い場合、テキスト表記にフォールバックする", () => {
-    localStorage.setItem(STORAGE_KEY, fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
     render(<App />);
     expect(screen.getByText("Test User としてログイン中")).toBeInTheDocument();
   });
 
   it("ログイン済み状態でのマウント時、最初のAPIリクエストからAuthorizationヘッダーを送る", async () => {
     const token = fakeIdToken({ name: "Test User", email: "test@example.com" });
-    localStorage.setItem(STORAGE_KEY, token);
+    setSessionCookie(token);
     render(<App />);
 
     await vi.waitFor(() => expect(global.fetch).toHaveBeenCalled());
     const [, firstRequestOptions] = global.fetch.mock.calls[0];
     expect(firstRequestOptions.headers["Authorization"]).toBe(`Bearer ${token}`);
+  });
+
+  it("ログアウトボタンでセッションCookieが削除される", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+    expect(screen.getByRole("button", { name: "ログアウト" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "ログアウト" }));
+
+    expect(document.cookie.includes(`${STORAGE_KEY}=`)).toBe(false);
+    expect(screen.getByText("Camp Stockを利用するにはGoogleアカウントでログインしてください")).toBeInTheDocument();
   });
 
   it("現在のアプリバージョンを表示する", () => {

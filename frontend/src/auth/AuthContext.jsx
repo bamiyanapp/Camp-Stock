@@ -4,6 +4,24 @@ import { setAuthToken, setUnauthorizedHandler } from "../api/client.js";
 import { AuthContext } from "./authContext.js";
 
 const STORAGE_KEY = "camp-stock-id-token";
+// 30日: ブラウザを閉じて再訪問してもログイン状態を維持するための保持期間。
+// IDトークン自体の有効期限（通常1時間程度）が切れている場合は、これまで通り
+// APIの401応答（onUnauthorized）で自動ログアウトされる。
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+
+function readSessionCookie() {
+  const prefix = `${STORAGE_KEY}=`;
+  const row = document.cookie.split("; ").find((entry) => entry.startsWith(prefix));
+  return row ? decodeURIComponent(row.slice(prefix.length)) : null;
+}
+
+function writeSessionCookie(value, maxAgeSeconds) {
+  // Cookieはlocation.protocolがhttpsの場合のみSecure属性を付与する。
+  // ローカル開発（http://localhost）ではSecure属性を付けるとブラウザが
+  // Cookie自体を保存しないため、http/https両方で永続化できるようにする。
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${STORAGE_KEY}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax${secure}`;
+}
 
 function decodeUser(idToken) {
   if (!idToken) {
@@ -28,7 +46,7 @@ export function AuthProvider({ children }) {
   // （呼び出し元の同期処理内）でsetAuthTokenを直接呼び、子コンポーネントの
   // effectが実行される前に確実にauthTokenを確定させる。
   const [idToken, setIdToken] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = readSessionCookie();
     setAuthToken(stored);
     return stored;
   });
@@ -37,14 +55,14 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState(null);
 
   const login = useCallback((token) => {
-    localStorage.setItem(STORAGE_KEY, token);
+    writeSessionCookie(token, COOKIE_MAX_AGE_SECONDS);
     setAuthToken(token);
     setAuthError(null);
     setIdToken(token);
   }, []);
 
   const logout = useCallback((reason) => {
-    localStorage.removeItem(STORAGE_KEY);
+    writeSessionCookie("", 0);
     setAuthToken(null);
     if (reason) {
       setAuthError(reason);
