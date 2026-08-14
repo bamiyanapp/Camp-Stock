@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.8.0...v1.9.0) (2026-08-14)
+
+
+### Features
+
+* **frontend:** ログイン中表記をアカウント画像にする ([#50](https://github.com/bamiyanapp/Camp-Stock/issues/50)) ([b9d7a31](https://github.com/bamiyanapp/Camp-Stock/commit/b9d7a3141553610292898925d664121de852300e)), closes [#49](https://github.com/bamiyanapp/Camp-Stock/issues/49)
+
 # [1.8.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.7.2...v1.8.0) (2026-08-14)
 
 
