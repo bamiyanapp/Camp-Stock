@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.11.1...v1.12.0) (2026-08-14)
+
+
+### Features
+
+* **frontend:** 持ち物マスタの区分（category）を選択式の入力にする ([#66](https://github.com/bamiyanapp/Camp-Stock/issues/66)) ([4f65097](https://github.com/bamiyanapp/Camp-Stock/commit/4f650978a98d40f24949d8f7ce51b61c2e099517))
+
 ## [1.11.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.11.0...v1.11.1) (2026-08-14)
 
 
