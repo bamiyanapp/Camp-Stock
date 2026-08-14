@@ -17,12 +17,14 @@ function matchPath(pattern, path) {
   return params;
 }
 
-// routes: [{ method: "GET", path: "/camps/{campId}", handler: async ({ params, body, query }) => ({ statusCode, body }) }]
-// serviceが投げるエラー（ValidationError/NotFoundError、いずれもstatusCodeを持つ）を
-// ここでHTTPレスポンスへ変換する。想定外のエラーは500として扱う。
-export function createRouter(routes) {
+// routes: [{ method: "GET", path: "/camps/{campId}", handler: async ({ params, body, query, user }) => ({ statusCode, body }) }]
+// serviceが投げるエラー（ValidationError/NotFoundError/UnauthorizedError、いずれも
+// statusCodeを持つ）をここでHTTPレスポンスへ変換する。想定外のエラーは500として扱う。
+// authenticateを渡すと、マッチしたルートのハンドラを呼び出す前に必ず認証を行い、
+// 失敗時はハンドラを実行せず401を返す（認証をルーティングより手前で一元化する）。
+export function createRouter(routes, { authenticate } = {}) {
   return {
-    async handleRequest({ method, path, body, query }) {
+    async handleRequest({ method, path, headers, body, query }) {
       for (const route of routes) {
         if (route.method !== method) {
           continue;
@@ -30,7 +32,8 @@ export function createRouter(routes) {
         const params = matchPath(route.path, path);
         if (params) {
           try {
-            return await route.handler({ params, body, query: query || {} });
+            const user = authenticate ? await authenticate(headers || {}) : null;
+            return await route.handler({ params, body, query: query || {}, user });
           } catch (error) {
             const statusCode = error.statusCode || 500;
             return { statusCode, body: { message: error.message } };

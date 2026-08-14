@@ -18,6 +18,12 @@ backend/    Lambdaハンドラ・ビジネスロジック・DynamoDBリポジト
 infra/      AWS SAMテンプレート（DynamoDBテーブル・Lambda・API Gatewayの定義）
 ```
 
+## 認証
+
+Googleアカウント（Google Identity Services）によるログインを必須とする。フロントエンドは`@react-oauth/google`でIDトークンを取得し、`Authorization: Bearer <IDトークン>`ヘッダーを付けてAPIを呼び出す。バックエンドは`GOOGLE_CLIENT_ID`環境変数を使ってIDトークンのaudienceを検証する（`backend/src/lib/googleAuth.js`）。
+
+Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケーション）を発行し、承認済みのJavaScript生成元にフロントエンドのURL（CloudFrontドメインなど）を登録しておく必要がある。
+
 ## データモデル
 
 - **持ち物マスタ（Items）**: `itemId` / `name` / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ
@@ -69,6 +75,7 @@ ITEMS_TABLE_NAME=camp-stock-items node seed/seed-items.js
 |---|---|
 | `AWS_ACCESS_KEY_ID` | AWSデプロイ用IAMユーザーのアクセスキー |
 | `AWS_SECRET_ACCESS_KEY` | 同シークレットキー |
+| `GOOGLE_CLIENT_ID` | Google OAuth 2.0クライアントID。バックエンド（Lambda環境変数）とフロントエンド（ビルド時の`VITE_GOOGLE_CLIENT_ID`）の両方に使われる |
 | `BOT_TOKEN` | （任意）semantic-releaseのバージョン更新コミット・タグpush、GitHub Release作成用 |
 
 IAMユーザーには、CloudFormation・Lambda・API Gateway・DynamoDB・S3・CloudFront・IAM（Lambda実行ロール作成用）への権限が必要。リージョンは`.github/workflows/cd.yml`の`AWS_REGION`（既定: `ap-northeast-1`）で変更できる。
@@ -78,14 +85,14 @@ IAMユーザーには、CloudFormation・Lambda・API Gateway・DynamoDB・S3・
 ```sh
 cd infra
 sam build
-sam deploy --guided
+sam deploy --guided --parameter-overrides "GoogleClientId=<Google OAuthクライアントIDの値>"
 ```
 
 `sam deploy`完了後、スタックの出力（`ApiEndpoint` / `FrontendBucketName` / `FrontendDistributionId` / `FrontendUrl`）を使ってフロントエンドをビルド・アップロードする。
 
 ```sh
 cd frontend
-VITE_API_BASE_URL=<ApiEndpointの値> npm run build
+VITE_API_BASE_URL=<ApiEndpointの値> VITE_GOOGLE_CLIENT_ID=<Google OAuthクライアントIDの値> npm run build
 aws s3 sync dist s3://<FrontendBucketNameの値> --delete --cache-control "public, max-age=31536000, immutable" --exclude index.html
 aws s3 cp dist/index.html s3://<FrontendBucketNameの値>/index.html --cache-control "no-cache"
 aws cloudfront create-invalidation --distribution-id <FrontendDistributionIdの値> --paths "/*"

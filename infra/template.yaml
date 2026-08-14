@@ -3,6 +3,12 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Camp Stock - キャンプの持ち物管理アプリのバックエンド（Lambda + API Gateway + DynamoDB）
 
+Parameters:
+  GoogleClientId:
+    Type: String
+    Description: Google OAuth 2.0クライアントID（バックエンドでのIDトークンaudience検証に使用）
+    NoEcho: true
+
 Globals:
   Function:
     Timeout: 10
@@ -13,11 +19,15 @@ Globals:
         ITEMS_TABLE_NAME: !Ref ItemsTable
         CAMPS_TABLE_NAME: !Ref CampsTable
         CAMP_ITEMS_TABLE_NAME: !Ref CampItemsTable
+        GOOGLE_CLIENT_ID: !Ref GoogleClientId
 
 Resources:
-  # 明示的に定義し、CORS設定（プリフライトのOPTIONSをAPI Gateway側で自動応答）を
-  # 行う。POST/PUT/DELETEはContent-Type: application/jsonを伴うためCORSの
-  # シンプルリクエストの条件を満たさず、ブラウザがプリフライトリクエストを送信する。
+  # CORSはAPI Gateway（HTTP API）側で処理し、Lambda（backend/src/handler.js）は
+  # Access-Control-Allow-Originを付与しない。フロントエンドの配信元
+  # （CloudFrontドメイン）のみを許可する。明示的に定義し、CORS設定
+  # （プリフライトのOPTIONSをAPI Gateway側で自動応答）を行う。POST/PUT/DELETEは
+  # Content-Type: application/jsonを伴うためCORSのシンプルリクエストの条件を
+  # 満たさず、ブラウザがプリフライトリクエストを送信する。
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:

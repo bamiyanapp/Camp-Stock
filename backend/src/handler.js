@@ -7,6 +7,7 @@ import { createCampsService } from "./services/campsService.js";
 import { createCampItemsService } from "./services/campItemsService.js";
 import { createRouter } from "./router.js";
 import { buildRoutes } from "./routes/index.js";
+import { createGoogleAuthenticator } from "./lib/googleAuth.js";
 
 function toApiResponse({ statusCode, body }) {
   return {
@@ -21,6 +22,8 @@ function toApiResponse({ statusCode, body }) {
 // API Gateway（HTTP API, payload format 2.0）からのイベントをルーティングし、
 // 各serviceを実行する。DynamoDBクライアント・repository・serviceの組み立てを
 // このファイルに閉じ込め、ビジネスロジック側（services/*）はAWS SDKに依存しない。
+// CORSはAPI Gateway側のCorsConfiguration（infra/template.yaml）が処理するため、
+// レスポンスヘッダーにAccess-Control-Allow-Originは含めない。
 export async function handler(event) {
   const method = event.requestContext?.http?.method || event.httpMethod;
   const path = event.rawPath || event.path;
@@ -47,8 +50,13 @@ export async function handler(event) {
     campItemsRepository,
   });
 
+  const authenticate = createGoogleAuthenticator({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  });
+
   const router = createRouter(
-    buildRoutes({ itemsService, campsService, campItemsService })
+    buildRoutes({ itemsService, campsService, campItemsService }),
+    { authenticate }
   );
 
   let body;
@@ -64,6 +72,7 @@ export async function handler(event) {
   const result = await router.handleRequest({
     method,
     path,
+    headers: event.headers,
     body,
     query: event.queryStringParameters,
   });
