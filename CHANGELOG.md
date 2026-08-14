@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.11.0...v1.11.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **frontend:** セッション保持をlocalStorageからCookieに変更し、ログアウトボタンのクラッシュを修正する ([#63](https://github.com/bamiyanapp/Camp-Stock/issues/63)) ([5aa5941](https://github.com/bamiyanapp/Camp-Stock/commit/5aa59410bf6a4e6389c7000279bc7afbbe3f6088))
+
 # [1.11.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.10.0...v1.11.0) (2026-08-14)
 
 
