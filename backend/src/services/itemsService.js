@@ -22,7 +22,7 @@ export function createItemsService(itemsRepository) {
       return itemsRepository.list();
     },
 
-    async create({ name, category, vehicleType, storageLocation, notes }) {
+    async create({ name, category, vehicleType, storageLocation, notes }, userId) {
       validateInput({ name, category, vehicleType });
       const now = new Date().toISOString();
       const item = {
@@ -32,13 +32,15 @@ export function createItemsService(itemsRepository) {
         vehicleType,
         storageLocation: storageLocation || null,
         notes: notes || null,
+        createdBy: userId || null,
+        updatedBy: userId || null,
         createdAt: now,
         updatedAt: now,
       };
       return itemsRepository.put(item);
     },
 
-    async update(itemId, { name, category, vehicleType, storageLocation, notes }) {
+    async update(itemId, { name, category, vehicleType, storageLocation, notes }, userId) {
       const existing = await itemsRepository.get(itemId);
       if (!existing) {
         throw new NotFoundError(`item not found: ${itemId}`);
@@ -51,6 +53,7 @@ export function createItemsService(itemsRepository) {
         vehicleType,
         storageLocation: storageLocation || null,
         notes: notes || null,
+        updatedBy: userId || null,
         updatedAt: new Date().toISOString(),
       };
       return itemsRepository.put(updated);
