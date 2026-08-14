@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.3.0...v1.4.0) (2026-08-14)
+
+
+### Features
+
+* Googleアカウントによる認証を追加する ([#19](https://github.com/bamiyanapp/Camp-Stock/issues/19)) ([453f011](https://github.com/bamiyanapp/Camp-Stock/commit/453f011b704bbb854aaaa5accd4775e8480e9989)), closes [#3](https://github.com/bamiyanapp/Camp-Stock/issues/3)
+
 # [1.3.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.3...v1.3.0) (2026-08-14)
 
 
