@@ -79,6 +79,37 @@ describe("CampItemSelectionPage", () => {
     });
   });
 
+  it("チェックボックスの切り替えでは一覧を再取得せず、対象アイテムのみを楽観的に更新する", async () => {
+    const user = userEvent.setup();
+    api.setCampItemUsed.mockResolvedValue({});
+    renderPage();
+    await screen.findByText("さいふ");
+    expect(api.listCampItems).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByLabelText("さいふを今回使う"));
+
+    await waitFor(() => {
+      expect(api.setCampItemUsed).toHaveBeenCalledWith("camp-1", "item-2", true);
+    });
+    expect(screen.getByLabelText("さいふを今回使う")).toBeChecked();
+    // reload()を伴わないため、一覧の再取得は初回マウント時の1回のみ
+    expect(api.listCampItems).toHaveBeenCalledTimes(1);
+  });
+
+  it("APIリクエストが失敗した場合、対象のチェックボックスのみ元の状態に戻す", async () => {
+    const user = userEvent.setup();
+    api.setCampItemUsed.mockRejectedValue(new Error("更新に失敗しました"));
+    renderPage();
+    await screen.findByText("さいふ");
+
+    await user.click(screen.getByLabelText("さいふを今回使う"));
+
+    await waitFor(() => {
+      expect(screen.getByText("更新に失敗しました")).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText("さいふを今回使う")).not.toBeChecked();
+  });
+
   it("絵文字が設定された持ち物は、品名とともに絵文字を表示する", async () => {
     api.listCampItems.mockResolvedValue([
       {
