@@ -61,7 +61,7 @@ function AppContent() {
       {user && (
         <div className="mb-4 flex items-center justify-between text-sm">
           <AccountBadge user={user} />
-          <button type="button" className="btn btn-sm btn-ghost" onClick={logout}>
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => logout()}>
             ログアウト
           </button>
         </div>
