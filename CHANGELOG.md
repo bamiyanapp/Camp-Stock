@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.13.0...v1.14.0) (2026-08-14)
+
+
+### Features
+
+* 持ち物マスタの各アイテムに絵文字アイコンを付ける ([#73](https://github.com/bamiyanapp/Camp-Stock/issues/73)) ([2541f01](https://github.com/bamiyanapp/Camp-Stock/commit/2541f016ce55a420b9a85ad00d338970762644bb))
+
 # [1.13.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.12.0...v1.13.0) (2026-08-14)
 
 
