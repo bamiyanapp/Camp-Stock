@@ -35,6 +35,25 @@ describe("itemsService", () => {
     ).rejects.toThrow(/vehicleType/);
   });
 
+  it("create: emojiを指定した場合はそのまま保存する", async () => {
+    const item = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "car",
+      emoji: "⛺",
+    });
+    expect(item.emoji).toBe("⛺");
+  });
+
+  it("create: emojiを指定しない場合はnullになる", async () => {
+    const item = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "car",
+    });
+    expect(item.emoji).toBeNull();
+  });
+
   it("create: userIdをcreatedBy/updatedByとして記録する", async () => {
     const item = await service.create(
       { name: "テント", category: "住", vehicleType: "car" },
@@ -58,6 +77,22 @@ describe("itemsService", () => {
     expect(updated.name).toBe("ティピーテント");
     expect(updated.vehicleType).toBe("both");
     expect(updated.createdAt).toBe(created.createdAt);
+  });
+
+  it("update: emojiを更新できる", async () => {
+    const created = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "car",
+      emoji: "⛺",
+    });
+    const updated = await service.update(created.itemId, {
+      name: "テント",
+      category: "住",
+      vehicleType: "car",
+      emoji: "🏕️",
+    });
+    expect(updated.emoji).toBe("🏕️");
   });
 
   it("update: userIdをupdatedByとして記録し、createdByは変更しない", async () => {

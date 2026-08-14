@@ -22,7 +22,7 @@ export function createItemsService(itemsRepository) {
       return itemsRepository.list();
     },
 
-    async create({ name, category, vehicleType, storageLocation, notes }, userId) {
+    async create({ name, category, vehicleType, emoji, storageLocation, notes }, userId) {
       validateInput({ name, category, vehicleType });
       const now = new Date().toISOString();
       const item = {
@@ -30,6 +30,7 @@ export function createItemsService(itemsRepository) {
         name: name.trim(),
         category: category.trim(),
         vehicleType,
+        emoji: emoji || null,
         storageLocation: storageLocation || null,
         notes: notes || null,
         createdBy: userId || null,
@@ -40,7 +41,7 @@ export function createItemsService(itemsRepository) {
       return itemsRepository.put(item);
     },
 
-    async update(itemId, { name, category, vehicleType, storageLocation, notes }, userId) {
+    async update(itemId, { name, category, vehicleType, emoji, storageLocation, notes }, userId) {
       const existing = await itemsRepository.get(itemId);
       if (!existing) {
         throw new NotFoundError(`item not found: ${itemId}`);
@@ -51,6 +52,7 @@ export function createItemsService(itemsRepository) {
         name: name.trim(),
         category: category.trim(),
         vehicleType,
+        emoji: emoji || null,
         storageLocation: storageLocation || null,
         notes: notes || null,
         updatedBy: userId || null,

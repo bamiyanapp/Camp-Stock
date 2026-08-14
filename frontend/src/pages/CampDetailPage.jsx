@@ -96,7 +96,10 @@ export default function CampDetailPage() {
                     key={item.itemId}
                     className="flex items-center justify-between gap-3 rounded bg-base-200 p-2"
                   >
-                    <span>{item.name}</span>
+                    <span>
+                      {item.emoji && <span className="mr-1">{item.emoji}</span>}
+                      {item.name}
+                    </span>
                     <input
                       type="checkbox"
                       className="checkbox"
