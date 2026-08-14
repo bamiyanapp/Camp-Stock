@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client.js";
 
 const VEHICLE_LABELS = { car: "車", bike: "バイク", both: "共通" };
@@ -8,19 +8,62 @@ const FILTER_OPTIONS = [
   { value: "bike", label: "バイクのみ" },
   { value: "both", label: "共通" },
 ];
+const NEW_CATEGORY_OPTION = "__new__";
+
+function useUniqueCategories(items) {
+  return useMemo(
+    () => [...new Set(items.map((item) => item.category))].sort((a, b) => a.localeCompare(b, "ja")),
+    [items]
+  );
+}
+
+function CategorySelect({ uniqueCategories, selection, onSelectionChange, newCategory, onNewCategoryChange }) {
+  return (
+    <>
+      <select
+        className="select select-bordered"
+        value={selection}
+        onChange={(e) => onSelectionChange(e.target.value)}
+      >
+        {uniqueCategories.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
+        <option value={NEW_CATEGORY_OPTION}>新しい区分を追加</option>
+      </select>
+      {selection === NEW_CATEGORY_OPTION && (
+        <input
+          className="input input-bordered"
+          placeholder="ジャンル（例: 調理、住、衣類）"
+          value={newCategory}
+          onChange={(e) => onNewCategoryChange(e.target.value)}
+          required
+        />
+      )}
+    </>
+  );
+}
 
 export default function ItemsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
+  const [categorySelection, setCategorySelection] = useState(NEW_CATEGORY_OPTION);
+  const [newCategory, setNewCategory] = useState("");
   const [vehicleType, setVehicleType] = useState("both");
   const [filterVehicleType, setFilterVehicleType] = useState("all");
   const [editingItemId, setEditingItemId] = useState(null);
   const [editName, setEditName] = useState("");
-  const [editCategory, setEditCategory] = useState("");
+  const [editCategorySelection, setEditCategorySelection] = useState(NEW_CATEGORY_OPTION);
+  const [editNewCategory, setEditNewCategory] = useState("");
   const [editVehicleType, setEditVehicleType] = useState("both");
+
+  const uniqueCategories = useUniqueCategories(items);
+  const category = categorySelection === NEW_CATEGORY_OPTION ? newCategory : categorySelection;
+  const editCategory =
+    editCategorySelection === NEW_CATEGORY_OPTION ? editNewCategory : editCategorySelection;
 
   function reload() {
     setLoading(true);
@@ -38,7 +81,8 @@ export default function ItemsPage() {
     try {
       await api.createItem({ name, category, vehicleType });
       setName("");
-      setCategory("");
+      setCategorySelection(NEW_CATEGORY_OPTION);
+      setNewCategory("");
       reload();
     } catch (err) {
       setError(err.message);
@@ -57,7 +101,8 @@ export default function ItemsPage() {
   function startEdit(item) {
     setEditingItemId(item.itemId);
     setEditName(item.name);
-    setEditCategory(item.category);
+    setEditCategorySelection(item.category);
+    setEditNewCategory("");
     setEditVehicleType(item.vehicleType);
   }
 
@@ -99,12 +144,12 @@ export default function ItemsPage() {
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <input
-          className="input input-bordered"
-          placeholder="ジャンル（例: 調理、住、衣類）"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
+        <CategorySelect
+          uniqueCategories={uniqueCategories}
+          selection={categorySelection}
+          onSelectionChange={setCategorySelection}
+          newCategory={newCategory}
+          onNewCategoryChange={setNewCategory}
         />
         <select
           className="select select-bordered"
@@ -152,11 +197,12 @@ export default function ItemsPage() {
                     onChange={(e) => setEditName(e.target.value)}
                     required
                   />
-                  <input
-                    className="input input-bordered"
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                    required
+                  <CategorySelect
+                    uniqueCategories={uniqueCategories}
+                    selection={editCategorySelection}
+                    onSelectionChange={setEditCategorySelection}
+                    newCategory={editNewCategory}
+                    onNewCategoryChange={setEditNewCategory}
                   />
                   <select
                     className="select select-bordered"
