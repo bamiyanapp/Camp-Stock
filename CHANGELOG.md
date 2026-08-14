@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.14.0...v1.14.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **frontend:** チェック操作で画面全体がリフレッシュされないよう楽観的更新に変更する ([#77](https://github.com/bamiyanapp/Camp-Stock/issues/77)) ([7f30551](https://github.com/bamiyanapp/Camp-Stock/commit/7f30551fcec64faec84daf8f83b932c5314a3c63))
+
 # [1.14.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.13.0...v1.14.0) (2026-08-14)
 
 
