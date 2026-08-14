@@ -61,6 +61,13 @@ describe("CampDetailPage", () => {
     expect(screen.getByText("さいふ")).toBeInTheDocument();
   });
 
+  it("「今回使う」「積んだ」の表記はヘッダーに一度だけ表示し、各行には表示しない", async () => {
+    renderPage();
+    await screen.findByText("テント");
+    expect(screen.getAllByText("今回使う")).toHaveLength(1);
+    expect(screen.getAllByText("積んだ")).toHaveLength(1);
+  });
+
   it("used=falseのアイテムには積み込みチェックボックスを表示しない", async () => {
     renderPage();
     await screen.findByText("テント");
