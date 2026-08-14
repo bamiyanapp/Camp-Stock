@@ -118,4 +118,41 @@ describe("CampDetailPage", () => {
       expect(api.setCampItemPacked).toHaveBeenCalledWith("camp-1", "item-2", true);
     });
   });
+
+  it("チェックボックスの切り替えでは一覧を再取得せず、対象アイテムのみを楽観的に更新する", async () => {
+    const user = userEvent.setup();
+    api.setCampItemPacked.mockResolvedValue({});
+    renderPage();
+    await screen.findByText("さいふ");
+    expect(api.listCampItems).toHaveBeenCalledTimes(1);
+
+    const walletRow = screen.getByText("さいふ").closest("li");
+    const checkbox = walletRow.querySelector('input[type="checkbox"]');
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(api.setCampItemPacked).toHaveBeenCalledWith("camp-1", "item-2", true);
+    });
+    expect(checkbox).toBeChecked();
+    // reload()を伴わないため、一覧の再取得は初回マウント時の1回のみ
+    expect(api.listCampItems).toHaveBeenCalledTimes(1);
+  });
+
+  it("APIリクエストが失敗した場合、対象のチェックボックスのみ元の状態に戻す", async () => {
+    const user = userEvent.setup();
+    api.setCampItemPacked.mockRejectedValue(new Error("更新に失敗しました"));
+    renderPage();
+    await screen.findByText("さいふ");
+
+    const walletRow = screen.getByText("さいふ").closest("li");
+    const checkbox = walletRow.querySelector('input[type="checkbox"]');
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByText("更新に失敗しました")).toBeInTheDocument();
+    });
+    expect(checkbox).not.toBeChecked();
+    // エラー時も一覧自体は表示されたまま（画面全体が消えない）
+    expect(screen.getByText("さいふ")).toBeInTheDocument();
+  });
 });

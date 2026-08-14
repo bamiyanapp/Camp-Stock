@@ -35,23 +35,28 @@ export default function CampDetailPage() {
 
   useEffect(reload, [campId]);
 
+  // チェック操作のたびに一覧全体を再取得すると、その都度「読み込み中...」を
+  // 挟んで画面全体がちらつくため、対象アイテムのみを楽観的に更新する。
+  // APIリクエストが失敗した場合のみ、その項目を元の状態に戻す。
   async function handleTogglePacked(itemId, packed) {
+    setItems((prevItems) =>
+      prevItems.map((item) => (item.itemId === itemId ? { ...item, packed } : item))
+    );
     try {
       await api.setCampItemPacked(campId, itemId, packed);
-      reload();
     } catch (err) {
       setError(err.message);
+      setItems((prevItems) =>
+        prevItems.map((item) => (item.itemId === itemId ? { ...item, packed: !packed } : item))
+      );
     }
   }
 
   if (loading) {
     return <p>読み込み中...</p>;
   }
-  if (error) {
-    return <p className="text-error">{error}</p>;
-  }
   if (!camp) {
-    return null;
+    return error ? <p className="text-error">{error}</p> : null;
   }
 
   // 「今回使う」持ち物のみをメイン一覧に表示する。今回使うかどうかの選択
@@ -61,6 +66,7 @@ export default function CampDetailPage() {
 
   return (
     <div>
+      {error && <p className="mb-4 text-error">{error}</p>}
       <Link to="/" className="link mb-4 inline-block">
         ← キャンプ一覧へ戻る
       </Link>
