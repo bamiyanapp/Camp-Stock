@@ -78,7 +78,10 @@ export default function CampItemSelectionPage() {
                   aria-label={`${item.name}を今回使う`}
                   onChange={(e) => handleToggleUsed(item.itemId, e.target.checked)}
                 />
-                <span>{item.name}</span>
+                <span>
+                  {item.emoji && <span className="mr-1">{item.emoji}</span>}
+                  {item.name}
+                </span>
               </li>
             ))}
           </ul>

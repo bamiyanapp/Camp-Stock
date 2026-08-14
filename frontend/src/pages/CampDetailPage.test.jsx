@@ -87,6 +87,23 @@ describe("CampDetailPage", () => {
     expect(screen.queryByLabelText("さいふを今回使う")).not.toBeInTheDocument();
   });
 
+  it("絵文字が設定された持ち物は、品名とともに絵文字を表示する", async () => {
+    api.listCampItems.mockResolvedValue([
+      {
+        itemId: "item-2",
+        name: "さいふ",
+        emoji: "👛",
+        category: "携帯品",
+        vehicleType: "both",
+        used: true,
+        packed: false,
+      },
+    ]);
+    renderPage();
+    await screen.findByText("さいふ");
+    expect(screen.getByText("👛")).toBeInTheDocument();
+  });
+
   it("「積んだ」チェックボックスでsetCampItemPackedを呼ぶ", async () => {
     const user = userEvent.setup();
     api.setCampItemPacked.mockResolvedValue({});

@@ -50,12 +50,14 @@ export default function ItemsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
+  const [emoji, setEmoji] = useState("");
   const [categorySelection, setCategorySelection] = useState(NEW_CATEGORY_OPTION);
   const [newCategory, setNewCategory] = useState("");
   const [vehicleType, setVehicleType] = useState("both");
   const [filterVehicleType, setFilterVehicleType] = useState("all");
   const [editingItemId, setEditingItemId] = useState(null);
   const [editName, setEditName] = useState("");
+  const [editEmoji, setEditEmoji] = useState("");
   const [editCategorySelection, setEditCategorySelection] = useState(NEW_CATEGORY_OPTION);
   const [editNewCategory, setEditNewCategory] = useState("");
   const [editVehicleType, setEditVehicleType] = useState("both");
@@ -79,8 +81,9 @@ export default function ItemsPage() {
   async function handleCreate(event) {
     event.preventDefault();
     try {
-      await api.createItem({ name, category, vehicleType });
+      await api.createItem({ name, emoji, category, vehicleType });
       setName("");
+      setEmoji("");
       setCategorySelection(NEW_CATEGORY_OPTION);
       setNewCategory("");
       reload();
@@ -101,6 +104,7 @@ export default function ItemsPage() {
   function startEdit(item) {
     setEditingItemId(item.itemId);
     setEditName(item.name);
+    setEditEmoji(item.emoji || "");
     setEditCategorySelection(item.category);
     setEditNewCategory("");
     setEditVehicleType(item.vehicleType);
@@ -115,6 +119,7 @@ export default function ItemsPage() {
     try {
       await api.updateItem(item.itemId, {
         name: editName,
+        emoji: editEmoji,
         category: editCategory,
         vehicleType: editVehicleType,
         storageLocation: item.storageLocation,
@@ -137,13 +142,22 @@ export default function ItemsPage() {
       {error && <p className="mb-4 text-error">{error}</p>}
 
       <form onSubmit={handleCreate} className="mb-8 flex flex-col gap-2">
-        <input
-          className="input input-bordered"
-          placeholder="品名"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        <div className="flex gap-2">
+          <input
+            className="input input-bordered w-16 text-center"
+            placeholder="絵文字"
+            value={emoji}
+            onChange={(e) => setEmoji(e.target.value)}
+            aria-label="絵文字"
+          />
+          <input
+            className="input input-bordered flex-1"
+            placeholder="品名"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
         <CategorySelect
           uniqueCategories={uniqueCategories}
           selection={categorySelection}
@@ -191,12 +205,21 @@ export default function ItemsPage() {
                   onSubmit={(e) => handleUpdate(e, item)}
                   className="flex flex-col gap-2"
                 >
-                  <input
-                    className="input input-bordered"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      className="input input-bordered w-16 text-center"
+                      placeholder="絵文字"
+                      value={editEmoji}
+                      onChange={(e) => setEditEmoji(e.target.value)}
+                      aria-label="絵文字"
+                    />
+                    <input
+                      className="input input-bordered flex-1"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      required
+                    />
+                  </div>
                   <CategorySelect
                     uniqueCategories={uniqueCategories}
                     selection={editCategorySelection}
@@ -234,6 +257,7 @@ export default function ItemsPage() {
               >
                 <div>
                   <span className="badge badge-outline mr-2">{item.category}</span>
+                  {item.emoji && <span className="mr-1">{item.emoji}</span>}
                   {item.name}
                   <span className="badge badge-ghost ml-2">
                     {VEHICLE_LABELS[item.vehicleType]}

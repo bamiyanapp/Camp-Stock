@@ -79,6 +79,23 @@ describe("CampItemSelectionPage", () => {
     });
   });
 
+  it("絵文字が設定された持ち物は、品名とともに絵文字を表示する", async () => {
+    api.listCampItems.mockResolvedValue([
+      {
+        itemId: "item-1",
+        name: "テント",
+        emoji: "⛺",
+        category: "住",
+        vehicleType: "car",
+        used: true,
+        packed: false,
+      },
+    ]);
+    renderPage();
+    await screen.findByText("テント");
+    expect(screen.getByText("⛺")).toBeInTheDocument();
+  });
+
   it("キャンプ詳細画面へ戻るリンクを表示する", async () => {
     renderPage();
     await screen.findByText("テント");
