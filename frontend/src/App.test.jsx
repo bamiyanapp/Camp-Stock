@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import App from "./App.jsx";
 
 const STORAGE_KEY = "camp-stock-id-token";
@@ -34,6 +34,41 @@ describe("App", () => {
     render(<App />);
     expect(screen.getByRole("link", { name: "キャンプ一覧" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "持ち物マスタ" })).toBeInTheDocument();
+  });
+
+  it("pictureがある場合、アカウント画像を表示する", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      fakeIdToken({
+        name: "Test User",
+        email: "test@example.com",
+        picture: "https://example.com/avatar.png",
+      })
+    );
+    render(<App />);
+    const avatar = screen.getByRole("img", { name: "Test User" });
+    expect(avatar).toHaveAttribute("src", "https://example.com/avatar.png");
+  });
+
+  it("画像の読み込みに失敗した場合、テキスト表記にフォールバックする", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      fakeIdToken({
+        name: "Test User",
+        email: "test@example.com",
+        picture: "https://example.com/broken.png",
+      })
+    );
+    render(<App />);
+    const avatar = screen.getByRole("img", { name: "Test User" });
+    fireEvent.error(avatar);
+    expect(screen.getByText("Test User としてログイン中")).toBeInTheDocument();
+  });
+
+  it("pictureが無い場合、テキスト表記にフォールバックする", () => {
+    localStorage.setItem(STORAGE_KEY, fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+    expect(screen.getByText("Test User としてログイン中")).toBeInTheDocument();
   });
 
   it("ログイン済み状態でのマウント時、最初のAPIリクエストからAuthorizationヘッダーを送る", async () => {

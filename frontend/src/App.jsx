@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext.jsx";
@@ -21,6 +22,24 @@ function Navigation() {
   );
 }
 
+function AccountBadge({ user }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const label = user.name || user.email;
+
+  if (user.picture && !imageFailed) {
+    return (
+      <img
+        src={user.picture}
+        alt={label}
+        title={label}
+        className="h-8 w-8 rounded-full"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+  return <span>{label} としてログイン中</span>;
+}
+
 const buildTimeLabel = new Date(__APP_BUILD_TIME__).toLocaleString("ja-JP", {
   timeZone: "Asia/Tokyo",
   year: "numeric",
@@ -41,7 +60,7 @@ function AppContent() {
     <>
       {user && (
         <div className="mb-4 flex items-center justify-between text-sm">
-          <span>{user.name || user.email} としてログイン中</span>
+          <AccountBadge user={user} />
           <button type="button" className="btn btn-sm btn-ghost" onClick={logout}>
             ログアウト
           </button>
