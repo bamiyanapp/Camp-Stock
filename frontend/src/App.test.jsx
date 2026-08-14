@@ -36,6 +36,16 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "持ち物マスタ" })).toBeInTheDocument();
   });
 
+  it("ログイン済み状態でのマウント時、最初のAPIリクエストからAuthorizationヘッダーを送る", async () => {
+    const token = fakeIdToken({ name: "Test User", email: "test@example.com" });
+    localStorage.setItem(STORAGE_KEY, token);
+    render(<App />);
+
+    await vi.waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    const [, firstRequestOptions] = global.fetch.mock.calls[0];
+    expect(firstRequestOptions.headers["Authorization"]).toBe(`Bearer ${token}`);
+  });
+
   it("現在のアプリバージョンを表示する", () => {
     render(<App />);
     expect(screen.getByText(/^v\d+\.\d+\.\d+$/)).toBeInTheDocument();
