@@ -58,6 +58,8 @@ cd backend && npm install && npm run lint && npm test
 
 `backend/seed/items-seed.json` に、既存スプレッドシートから移行した持ち物マスタの初期データ（約150件）を収録している。`backend/seed/seed-items.js` で DynamoDB へ投入できる（AWS認証情報とテーブル名の環境変数が必要）。
 
+GitHub Actionsの`Seed items master data`ワークフロー（`.github/workflows/seed-items.yml`）から、CDと同じGitHub SecretsのAWS認証情報を使って手動実行できる（GitHubのActionsタブ→対象ワークフロー→「Run workflow」）。`itemId`をキーにしたPutItemのため、再実行しても重複せず上書きされる。
+
 ```sh
 cd backend
 ITEMS_TABLE_NAME=camp-stock-items node seed/seed-items.js
@@ -91,6 +93,7 @@ sam deploy --guided --parameter-overrides "GoogleClientId=<Google OAuthクライ
 ```sh
 cd frontend
 VITE_API_BASE_URL=<ApiEndpointの値> VITE_GOOGLE_CLIENT_ID=<Google OAuthクライアントIDの値> npm run build
-aws s3 sync dist s3://<FrontendBucketNameの値> --delete
+aws s3 sync dist s3://<FrontendBucketNameの値> --delete --cache-control "public, max-age=31536000, immutable" --exclude index.html
+aws s3 cp dist/index.html s3://<FrontendBucketNameの値>/index.html --cache-control "no-cache"
 aws cloudfront create-invalidation --distribution-id <FrontendDistributionIdの値> --paths "/*"
 ```

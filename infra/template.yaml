@@ -24,7 +24,10 @@ Globals:
 Resources:
   # CORSはAPI Gateway（HTTP API）側で処理し、Lambda（backend/src/handler.js）は
   # Access-Control-Allow-Originを付与しない。フロントエンドの配信元
-  # （CloudFrontドメイン）のみを許可する。
+  # （CloudFrontドメイン）のみを許可する。明示的に定義し、CORS設定
+  # （プリフライトのOPTIONSをAPI Gateway側で自動応答）を行う。POST/PUT/DELETEは
+  # Content-Type: application/jsonを伴うためCORSのシンプルリクエストの条件を
+  # 満たさず、ブラウザがプリフライトリクエストを送信する。
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:

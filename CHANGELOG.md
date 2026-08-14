@@ -1,3 +1,31 @@
+# [1.3.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.3...v1.3.0) (2026-08-14)
+
+
+### Features
+
+* **cd:** 持ち物マスタの初期データをDynamoDBへ投入するワークフローを追加 ([#25](https://github.com/bamiyanapp/Camp-Stock/issues/25)) ([6820f22](https://github.com/bamiyanapp/Camp-Stock/commit/6820f22d5d58ae6e845cd7119cc4c21b43011cae)), closes [#24](https://github.com/bamiyanapp/Camp-Stock/issues/24)
+
+## [1.2.3](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.2...v1.2.3) (2026-08-14)
+
+
+### Bug Fixes
+
+* **backend:** CORSプリフライト（OPTIONS）がLambdaで404になる問題を修正 ([#22](https://github.com/bamiyanapp/Camp-Stock/issues/22)) ([5601e10](https://github.com/bamiyanapp/Camp-Stock/commit/5601e10e8b028c832ae39b389985971e74a4f309)), closes [#17](https://github.com/bamiyanapp/Camp-Stock/issues/17)
+
+## [1.2.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.1...v1.2.2) (2026-08-13)
+
+
+### Bug Fixes
+
+* **cd:** デプロイ後もブラウザに古いビルドがキャッシュされ続ける問題を修正 ([#21](https://github.com/bamiyanapp/Camp-Stock/issues/21)) ([286e419](https://github.com/bamiyanapp/Camp-Stock/commit/286e419fb1f32049e0ff5bc8f24605e3d8eb029c)), closes [#20](https://github.com/bamiyanapp/Camp-Stock/issues/20)
+
+## [1.2.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.0...v1.2.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* **backend:** POST/PUT/DELETEリクエストのCORSプリフライト失敗を修正 ([#18](https://github.com/bamiyanapp/Camp-Stock/issues/18)) ([892fcc4](https://github.com/bamiyanapp/Camp-Stock/commit/892fcc45d43dfbba3b2cfef05be7f7fdce5481d6)), closes [#17](https://github.com/bamiyanapp/Camp-Stock/issues/17)
+
 # [1.2.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.1.0...v1.2.0) (2026-08-13)
 
 
