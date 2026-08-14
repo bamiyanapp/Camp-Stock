@@ -18,7 +18,7 @@ function matchPath(pattern, path) {
 }
 
 // routes: [{ method: "GET", path: "/camps/{campId}", handler: async ({ params, body, query, user }) => ({ statusCode, body }) }]
-// serviceが投げるエラー（ValidationError/NotFoundError/UnauthorizedError、いずれも
+// serviceが投げるエラー（ValidationError/NotFoundError/UnauthorizedError/ForbiddenError、いずれも
 // statusCodeを持つ）をここでHTTPレスポンスへ変換する。想定外のエラーは500として扱う。
 // authenticateを渡すと、マッチしたルートのハンドラを呼び出す前に必ず認証を行い、
 // 失敗時はハンドラを実行せず401を返す（認証をルーティングより手前で一元化する）。

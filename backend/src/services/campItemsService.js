@@ -1,5 +1,6 @@
 import { matchesVehicle } from "../domain/vehicleType.js";
 import { NotFoundError } from "../lib/errors.js";
+import { assertCampOwner } from "./campsService.js";
 
 // キャンプごとの持ち物状態は、CampItemsテーブルに「今回使う」として選択された
 // アイテムのレコードのみを持つ設計にする（レコードが存在する = used）。
@@ -12,11 +13,12 @@ export function createCampItemsService({
   return {
     // 持ち物マスタのうち、キャンプの移動手段に対応する候補一覧を、
     // このキャンプでの使用中/積み込み状態とマージして返す。
-    async listForCamp(campId) {
+    async listForCamp(campId, ownerUserId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
+      assertCampOwner(camp, ownerUserId);
       const [allItems, campItems] = await Promise.all([
         itemsRepository.list(),
         campItemsRepository.listByCamp(campId),
@@ -36,7 +38,7 @@ export function createCampItemsService({
         });
     },
 
-    async setUsed(campId, itemId, used) {
+    async setUsed(campId, itemId, used, ownerUserId) {
       const [camp, item] = await Promise.all([
         campsRepository.get(campId),
         itemsRepository.get(itemId),
@@ -47,6 +49,7 @@ export function createCampItemsService({
       if (!item) {
         throw new NotFoundError(`item not found: ${itemId}`);
       }
+      assertCampOwner(camp, ownerUserId);
 
       if (!used) {
         await campItemsRepository.delete(campId, itemId);
@@ -74,7 +77,12 @@ export function createCampItemsService({
       return { campId, itemId, used: true, packed: false };
     },
 
-    async setPacked(campId, itemId, packed) {
+    async setPacked(campId, itemId, packed, ownerUserId) {
+      const camp = await campsRepository.get(campId);
+      if (!camp) {
+        throw new NotFoundError(`camp not found: ${campId}`);
+      }
+      assertCampOwner(camp, ownerUserId);
       const existing = await campItemsRepository.get(campId, itemId);
       if (!existing) {
         throw new NotFoundError(

@@ -27,7 +27,7 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 ## データモデル
 
 - **持ち物マスタ（Items）**: `itemId` / `name` / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID） — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ
-- **キャンプ（Camps）**: `campId` / `name` / `date` / `vehicleType`（`car` | `bike`）— 個々のキャンプ。移動手段を1つ選ぶ
+- **キャンプ（Camps）**: `campId` / `name` / `date` / `vehicleType`（`car` | `bike`）/ `ownerUserId`（作成者のGoogleアカウントID） — 個々のキャンプ。移動手段を1つ選ぶ。作成したユーザー本人のみが参照・編集・削除できる（他ユーザーのキャンプへのアクセスは403）
 - **キャンプごとの持ち物状態（CampItems）**: `campId` + `itemId` をキーに、そのキャンプで「今回使う」と選択された持ち物の積み込み状態（`packed`）を保持する。レコードが存在すること自体が「使用中」を表す
 
 ## API
