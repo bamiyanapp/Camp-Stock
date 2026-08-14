@@ -51,7 +51,7 @@ jobs:
       - name: Deploy backend (SAM)
         working-directory: infra
         env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
         run: |
           sam deploy \
             --stack-name "$STACK_NAME" \
@@ -83,7 +83,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_BASE_URL: ${{ steps.stack-outputs.outputs.api_endpoint }}
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
         run: npm run build
 
       # index.htmlは常に最新を取得させるためno-cache、コンテンツハッシュ付きの

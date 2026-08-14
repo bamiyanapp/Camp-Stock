@@ -75,7 +75,7 @@ ITEMS_TABLE_NAME=camp-stock-items node seed/seed-items.js
 |---|---|
 | `AWS_ACCESS_KEY_ID` | AWSデプロイ用IAMユーザーのアクセスキー |
 | `AWS_SECRET_ACCESS_KEY` | 同シークレットキー |
-| `GOOGLE_CLIENT_ID` | Google OAuth 2.0クライアントID。バックエンド（Lambda環境変数）とフロントエンド（ビルド時の`VITE_GOOGLE_CLIENT_ID`）の両方に使われる |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth 2.0クライアントID。バックエンド（Lambda環境変数`GOOGLE_CLIENT_ID`）とフロントエンド（ビルド時の`VITE_GOOGLE_CLIENT_ID`）の両方に使われる |
 | `BOT_TOKEN` | （任意）semantic-releaseのバージョン更新コミット・タグpush、GitHub Release作成用 |
 
 IAMユーザーには、CloudFormation・Lambda・API Gateway・DynamoDB・S3・CloudFront・IAM（Lambda実行ロール作成用）への権限が必要。リージョンは`.github/workflows/cd.yml`の`AWS_REGION`（既定: `ap-northeast-1`）で変更できる。
