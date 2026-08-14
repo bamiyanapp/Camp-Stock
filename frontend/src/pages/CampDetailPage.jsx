@@ -35,15 +35,6 @@ export default function CampDetailPage() {
 
   useEffect(reload, [campId]);
 
-  async function handleToggleUsed(itemId, used) {
-    try {
-      await api.setCampItemUsed(campId, itemId, used);
-      reload();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
   async function handleTogglePacked(itemId, packed) {
     try {
       await api.setCampItemPacked(campId, itemId, packed);
@@ -63,60 +54,63 @@ export default function CampDetailPage() {
     return null;
   }
 
-  const usedCount = items.filter((item) => item.used).length;
-  const packedCount = items.filter((item) => item.packed).length;
+  // 「今回使う」持ち物のみをメイン一覧に表示する。今回使うかどうかの選択
+  // 自体は、別画面（CampItemSelectionPage）で行う。
+  const usedItems = items.filter((item) => item.used);
+  const packedCount = usedItems.filter((item) => item.packed).length;
 
   return (
     <div>
       <Link to="/" className="link mb-4 inline-block">
         ← キャンプ一覧へ戻る
       </Link>
-      <h2 className="mb-2 text-xl font-bold">
-        {camp.name}（{VEHICLE_LABELS[camp.vehicleType]}）
-      </h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-xl font-bold">
+          {camp.name}（{VEHICLE_LABELS[camp.vehicleType]}）
+        </h2>
+        <Link to={`/camps/${campId}/select-items`} className="btn btn-sm btn-primary">
+          持ち物を選ぶ
+        </Link>
+      </div>
       <p className="mb-6 text-sm opacity-70">
-        使用予定 {usedCount}件中 {packedCount}件 積み込み済み
+        使用予定 {usedItems.length}件中 {packedCount}件 積み込み済み
       </p>
 
-      <div className="mb-2 grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-3 px-2 text-xs font-semibold opacity-70">
-        <span className="text-center">今回使う</span>
-        <span>品名</span>
-        <span className="text-center">積んだ</span>
-      </div>
+      {usedItems.length === 0 ? (
+        <p className="text-sm opacity-70">
+          今回使う持ち物がまだ選択されていません。「持ち物を選ぶ」から選択してください。
+        </p>
+      ) : (
+        <>
+          <div className="mb-2 flex items-center justify-between gap-3 px-2 text-xs font-semibold opacity-70">
+            <span>品名</span>
+            <span>積んだ</span>
+          </div>
 
-      {groupByCategory(items).map(([category, categoryItems]) => (
-        <section key={category} className="mb-6">
-          <h3 className="mb-2 font-semibold">{category}</h3>
-          <ul className="flex flex-col gap-1">
-            {categoryItems.map((item) => (
-              <li
-                key={item.itemId}
-                className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-3 rounded bg-base-200 p-2"
-              >
-                <input
-                  type="checkbox"
-                  className="checkbox justify-self-center"
-                  checked={item.used}
-                  aria-label={`${item.name}を今回使う`}
-                  onChange={(e) => handleToggleUsed(item.itemId, e.target.checked)}
-                />
-                <span>{item.name}</span>
-                {item.used ? (
-                  <input
-                    type="checkbox"
-                    className="checkbox justify-self-center"
-                    checked={item.packed}
-                    aria-label={`${item.name}を積んだ`}
-                    onChange={(e) => handleTogglePacked(item.itemId, e.target.checked)}
-                  />
-                ) : (
-                  <span />
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+          {groupByCategory(usedItems).map(([category, categoryItems]) => (
+            <section key={category} className="mb-6">
+              <h3 className="mb-2 font-semibold">{category}</h3>
+              <ul className="flex flex-col gap-1">
+                {categoryItems.map((item) => (
+                  <li
+                    key={item.itemId}
+                    className="flex items-center justify-between gap-3 rounded bg-base-200 p-2"
+                  >
+                    <span>{item.name}</span>
+                    <input
+                      type="checkbox"
+                      className="checkbox"
+                      checked={item.packed}
+                      aria-label={`${item.name}を積んだ`}
+                      onChange={(e) => handleTogglePacked(item.itemId, e.target.checked)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </>
+      )}
     </div>
   );
 }

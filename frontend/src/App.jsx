@@ -6,6 +6,7 @@ import { useAuth } from "./auth/useAuth.js";
 import LoginPage from "./auth/LoginPage.jsx";
 import CampListPage from "./pages/CampListPage.jsx";
 import CampDetailPage from "./pages/CampDetailPage.jsx";
+import CampItemSelectionPage from "./pages/CampItemSelectionPage.jsx";
 import ItemsPage from "./pages/ItemsPage.jsx";
 
 function Navigation() {
@@ -70,6 +71,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<CampListPage />} />
         <Route path="/camps/:campId" element={<CampDetailPage />} />
+        <Route path="/camps/:campId/select-items" element={<CampItemSelectionPage />} />
         <Route path="/items" element={<ItemsPage />} />
       </Routes>
     </>
