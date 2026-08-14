@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.6.0...v1.7.0) (2026-08-14)
+
+
+### Features
+
+* **backend:** キャンプをユーザー個別データにする ([#34](https://github.com/bamiyanapp/Camp-Stock/issues/34)) ([6e3ac0b](https://github.com/bamiyanapp/Camp-Stock/commit/6e3ac0b89b345efc2314057042df16cd911af357)), closes [#13](https://github.com/bamiyanapp/Camp-Stock/issues/13)
+
 # [1.6.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.5.0...v1.6.0) (2026-08-14)
 
 
