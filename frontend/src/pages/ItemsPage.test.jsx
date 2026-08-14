@@ -26,10 +26,11 @@ describe("ItemsPage", () => {
   it("持ち物マスタ一覧を表示する", async () => {
     render(<ItemsPage />);
     expect(await screen.findByText("テント")).toBeInTheDocument();
-    expect(screen.getByText("住")).toBeInTheDocument();
+    const tentRow = screen.getByText("テント").closest("li");
+    expect(within(tentRow).getByText("住")).toBeInTheDocument();
   });
 
-  it("フォーム送信で持ち物マスタを作成する", async () => {
+  it("フォーム送信で持ち物マスタを作成する（新しい区分を追加）", async () => {
     const user = userEvent.setup();
     api.createItem.mockResolvedValue({ itemId: "4", name: "ランタン" });
     render(<ItemsPage />);
@@ -46,6 +47,32 @@ describe("ItemsPage", () => {
       expect(api.createItem).toHaveBeenCalledWith({
         name: "ランタン",
         category: "キャンプ",
+        vehicleType: "both",
+      });
+    });
+  });
+
+  it("既存の区分をセレクトで選ぶと、新規区分入力欄は表示されずその区分で作成される", async () => {
+    const user = userEvent.setup();
+    api.createItem.mockResolvedValue({ itemId: "4", name: "ランタン" });
+    render(<ItemsPage />);
+    await screen.findByText("テント");
+
+    const createForm = screen.getByPlaceholderText("品名").closest("form");
+    const [categorySelect] = within(createForm).getAllByRole("combobox");
+    await user.selectOptions(categorySelect, "住");
+
+    expect(
+      within(createForm).queryByPlaceholderText("ジャンル（例: 調理、住、衣類）")
+    ).not.toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText("品名"), "ランタン");
+    await user.click(screen.getByRole("button", { name: "持ち物を追加" }));
+
+    await waitFor(() => {
+      expect(api.createItem).toHaveBeenCalledWith({
+        name: "ランタン",
+        category: "住",
         vehicleType: "both",
       });
     });
@@ -82,6 +109,32 @@ describe("ItemsPage", () => {
       expect(api.updateItem).toHaveBeenCalledWith("1", {
         name: "ティピーテント",
         category: "住",
+        vehicleType: "car",
+        storageLocation: undefined,
+        notes: undefined,
+      });
+    });
+  });
+
+  it("編集フォームで既存の区分に変更でき、その区分でupdateItemを呼ぶ", async () => {
+    const user = userEvent.setup();
+    api.updateItem.mockResolvedValue({});
+    render(<ItemsPage />);
+    await screen.findByText("テント");
+
+    const tentRow = screen.getByText("テント").closest("li");
+    await user.click(within(tentRow).getByRole("button", { name: "編集" }));
+
+    const editForm = screen.getByDisplayValue("テント").closest("form");
+    const [categorySelect] = within(editForm).getAllByRole("combobox");
+    expect(categorySelect).toHaveValue("住");
+    await user.selectOptions(categorySelect, "携帯品");
+    await user.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => {
+      expect(api.updateItem).toHaveBeenCalledWith("1", {
+        name: "テント",
+        category: "携帯品",
         vehicleType: "car",
         storageLocation: undefined,
         notes: undefined,
