@@ -11,7 +11,7 @@ function decodeUser(idToken) {
   }
   try {
     const payload = jwtDecode(idToken);
-    return { name: payload.name, email: payload.email };
+    return { name: payload.name, email: payload.email, picture: payload.picture };
   } catch {
     return null;
   }
