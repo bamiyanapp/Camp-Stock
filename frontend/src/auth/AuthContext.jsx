@@ -32,16 +32,23 @@ export function AuthProvider({ children }) {
     setAuthToken(stored);
     return stored;
   });
+  // 401による自動ログアウトの理由。ログイン画面に戻った後も表示し続けられる
+  // よう、logout()呼び出し後も保持する（次のlogin()成功時にクリアする）。
+  const [authError, setAuthError] = useState(null);
 
   const login = useCallback((token) => {
     localStorage.setItem(STORAGE_KEY, token);
     setAuthToken(token);
+    setAuthError(null);
     setIdToken(token);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback((reason) => {
     localStorage.removeItem(STORAGE_KEY);
     setAuthToken(null);
+    if (reason) {
+      setAuthError(reason);
+    }
     setIdToken(null);
   }, []);
 
@@ -50,8 +57,8 @@ export function AuthProvider({ children }) {
   }, [logout]);
 
   const value = useMemo(
-    () => ({ idToken, user: decodeUser(idToken), login, logout }),
-    [idToken, login, logout]
+    () => ({ idToken, user: decodeUser(idToken), authError, login, logout }),
+    [idToken, authError, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

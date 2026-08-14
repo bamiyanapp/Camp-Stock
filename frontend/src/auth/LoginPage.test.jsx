@@ -11,10 +11,10 @@ vi.mock("@react-oauth/google", () => ({
   },
 }));
 
-function renderLoginPage() {
+function renderLoginPage({ authError = null } = {}) {
   const login = vi.fn();
   render(
-    <AuthContext.Provider value={{ idToken: null, user: null, login, logout: vi.fn() }}>
+    <AuthContext.Provider value={{ idToken: null, user: null, authError, login, logout: vi.fn() }}>
       <LoginPage />
     </AuthContext.Provider>
   );
@@ -45,5 +45,10 @@ describe("LoginPage", () => {
         "Googleからログイン情報を取得できませんでした。もう一度お試しください。"
       )
     ).toBeInTheDocument();
+  });
+
+  it("自動ログアウトの理由（authError）がある場合、画面に表示する", () => {
+    renderLoginPage({ authError: "認証情報が無効です" });
+    expect(screen.getByText("認証情報が無効です")).toBeInTheDocument();
   });
 });
