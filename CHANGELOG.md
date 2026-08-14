@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.9.0...v1.9.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **frontend:** 「今回使う」「積んだ」の表記をヘッダーに一本化する ([#53](https://github.com/bamiyanapp/Camp-Stock/issues/53)) ([c8522f6](https://github.com/bamiyanapp/Camp-Stock/commit/c8522f65f0534ea90d80ad54d2f7de479aa8b8d5)), closes [#52](https://github.com/bamiyanapp/Camp-Stock/issues/52)
+
 # [1.9.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.8.0...v1.9.0) (2026-08-14)
 
 
