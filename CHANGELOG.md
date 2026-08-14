@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.2...v1.2.3) (2026-08-14)
+
+
+### Bug Fixes
+
+* **backend:** CORSプリフライト（OPTIONS）がLambdaで404になる問題を修正 ([#22](https://github.com/bamiyanapp/Camp-Stock/issues/22)) ([5601e10](https://github.com/bamiyanapp/Camp-Stock/commit/5601e10e8b028c832ae39b389985971e74a4f309)), closes [#17](https://github.com/bamiyanapp/Camp-Stock/issues/17)
+
 ## [1.2.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.2.1...v1.2.2) (2026-08-13)
 
 
