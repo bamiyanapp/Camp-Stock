@@ -35,6 +35,15 @@ describe("itemsService", () => {
     ).rejects.toThrow(/vehicleType/);
   });
 
+  it("create: userIdをcreatedBy/updatedByとして記録する", async () => {
+    const item = await service.create(
+      { name: "テント", category: "住", vehicleType: "car" },
+      "user-1"
+    );
+    expect(item.createdBy).toBe("user-1");
+    expect(item.updatedBy).toBe("user-1");
+  });
+
   it("update: 既存の持ち物マスタを更新する", async () => {
     const created = await service.create({
       name: "テント",
@@ -49,6 +58,20 @@ describe("itemsService", () => {
     expect(updated.name).toBe("ティピーテント");
     expect(updated.vehicleType).toBe("both");
     expect(updated.createdAt).toBe(created.createdAt);
+  });
+
+  it("update: userIdをupdatedByとして記録し、createdByは変更しない", async () => {
+    const created = await service.create(
+      { name: "テント", category: "住", vehicleType: "car" },
+      "user-1"
+    );
+    const updated = await service.update(
+      created.itemId,
+      { name: "ティピーテント", category: "住", vehicleType: "both" },
+      "user-2"
+    );
+    expect(updated.createdBy).toBe("user-1");
+    expect(updated.updatedBy).toBe("user-2");
   });
 
   it("update: 存在しないitemIdならNotFoundErrorを投げる", async () => {

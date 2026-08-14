@@ -8,17 +8,17 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
     {
       method: "POST",
       path: "/items",
-      handler: async ({ body }) => ({
+      handler: async ({ body, user }) => ({
         statusCode: 201,
-        body: await itemsService.create(body),
+        body: await itemsService.create(body, user?.userId),
       }),
     },
     {
       method: "PUT",
       path: "/items/{itemId}",
-      handler: async ({ params, body }) => ({
+      handler: async ({ params, body, user }) => ({
         statusCode: 200,
-        body: await itemsService.update(params.itemId, body),
+        body: await itemsService.update(params.itemId, body, user?.userId),
       }),
     },
     {
