@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.10.0...v1.11.0) (2026-08-14)
+
+
+### Features
+
+* **frontend:** 持ち物・キャンプ一覧に編集と区分絞り込みを追加する ([#59](https://github.com/bamiyanapp/Camp-Stock/issues/59)) ([c101dbb](https://github.com/bamiyanapp/Camp-Stock/commit/c101dbbc5225270d194453d17172183406bc846b))
+
 # [1.10.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.9.1...v1.10.0) (2026-08-14)
 
 
