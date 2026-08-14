@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.5.0...v1.6.0) (2026-08-14)
+
+
+### Features
+
+* **cd:** GOOGLE_OAUTH_CLIENT_IDの形式検証とハッシュ記録を追加 ([#36](https://github.com/bamiyanapp/Camp-Stock/issues/36)) ([b8dfbd4](https://github.com/bamiyanapp/Camp-Stock/commit/b8dfbd4b0338202ddf668ff660412f1693dfdaa6)), closes [#35](https://github.com/bamiyanapp/Camp-Stock/issues/35)
+
 # [1.5.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.4.1...v1.5.0) (2026-08-14)
 
 
