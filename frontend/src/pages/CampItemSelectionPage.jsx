@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../api/client.js";
+import BackLink from "../components/BackLink.jsx";
 
 function groupByCategory(items) {
   const groups = new Map();
@@ -79,9 +80,7 @@ export default function CampItemSelectionPage() {
   return (
     <div>
       {error && <p className="mb-4 text-error">{error}</p>}
-      <Link to={`/camps/${campId}`} className="link mb-4 inline-block">
-        ← {camp.name}へ戻る
-      </Link>
+      <BackLink to={`/camps/${campId}`}>← {camp.name}へ戻る</BackLink>
       <h2 className="mb-2 text-xl font-bold">今回使う持ち物を選ぶ</h2>
       <p className="mb-6 text-sm opacity-70">
         チェックした持ち物だけが「{camp.name}」の一覧に表示されます。担当者は「今回使う」を選んだ持ち物のみ設定できます。
