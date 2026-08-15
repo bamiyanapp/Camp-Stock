@@ -72,6 +72,23 @@ cd frontend && npm install && npm run lint && npm test && npm run build
 cd backend && npm install && npm run lint && npm test
 ```
 
+### E2Eテスト
+
+Playwrightによるフロントエンドのユーザーフローテスト。実AWS・実Google認証は使わず、`backend/e2e/testServer.js`（in-memory repository・fake authenticator）と、`frontend/e2e/auth.js`によるログインバイパス（Cookieへのfakeなidトークン事前注入）で完結する。`frontend/playwright.config.js`の`webServer`設定が、このテストサーバーとViteのdevサーバーの両方を自動起動する。
+
+```sh
+cd frontend
+npm install
+npx playwright install chromium --with-deps  # 初回のみ
+npm run test:e2e
+```
+
+CIでは`.github/workflows/ci.yml`の`enable_e2e_test: true`により、PR・pushのたびに自動実行される。スクリーンショットはGitHub ActionsのJob Summary・PRコメントに画像として直接埋め込まれる（`dev-standards/docs/cicd-pipeline-specification.md`参照）。
+
+### カバレッジ閾値
+
+`.github/workflows/ci.yml`の`coverage_threshold`（現在75%）を下回ると、backend/frontendそれぞれのCIジョブが失敗する。判定対象はlines/statements/functions/branchesの4指標いずれか（`coverage_check_per_file`は無効。backendの`src/repositories/*`はDynamoDB SDKの薄いラッパーで、in-memory repositoryを使う単体テストでは意図的にカバーしない設計のため、ファイル単位判定にすると常に未達になってしまう）。
+
 ## 初期データ
 
 `backend/seed/items-seed.json` に、既存スプレッドシートから移行した持ち物マスタの初期データ（約150件）を収録している。`backend/seed/seed-items.js` で DynamoDB へ投入できる（AWS認証情報とテーブル名の環境変数が必要）。
