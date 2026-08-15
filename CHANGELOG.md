@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.15.0...v1.16.0) (2026-08-15)
+
+
+### Features
+
+* **frontend:** キャンプ詳細画面の持ち物一覧に積み込み済み/未済の表示切り替えを追加する ([#85](https://github.com/bamiyanapp/Camp-Stock/issues/85)) ([d772d6c](https://github.com/bamiyanapp/Camp-Stock/commit/d772d6ceefb1525539237a0e70741756f801919b))
+
 # [1.15.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.14.1...v1.15.0) (2026-08-15)
 
 
