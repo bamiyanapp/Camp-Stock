@@ -89,10 +89,48 @@ describe("App", () => {
     expect(firstRequestOptions.headers["Authorization"]).toBe(`Bearer ${token}`);
   });
 
+  it("アカウントメニューは既定では閉じており、ログアウトボタンは表示されない", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+    expect(screen.queryByRole("button", { name: "ログアウト" })).not.toBeInTheDocument();
+  });
+
+  it("アカウントアイコンをタップするとログアウトボタンが現れる", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
+
+    expect(screen.getByRole("button", { name: "ログアウト" })).toBeInTheDocument();
+  });
+
+  it("アカウントアイコンを再度タップするとメニューが閉じる", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    const toggle = screen.getByRole("button", { name: "アカウントメニュー" });
+    fireEvent.click(toggle);
+    expect(screen.getByRole("button", { name: "ログアウト" })).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(screen.queryByRole("button", { name: "ログアウト" })).not.toBeInTheDocument();
+  });
+
+  it("メニュー外をタップするとメニューが閉じる", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
+    expect(screen.getByRole("button", { name: "ログアウト" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "メニューを閉じる" }));
+    expect(screen.queryByRole("button", { name: "ログアウト" })).not.toBeInTheDocument();
+  });
+
   it("ログアウトボタンでセッションCookieが削除される", () => {
     setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
     render(<App />);
-    expect(screen.getByRole("button", { name: "ログアウト" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
 
     fireEvent.click(screen.getByRole("button", { name: "ログアウト" }));
 
