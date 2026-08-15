@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.14.1...v1.15.0) (2026-08-15)
+
+
+### Features
+
+* **frontend:** アカウントアイコンを右上に配置し、ログアウトをタップ時のみ表示する ([#80](https://github.com/bamiyanapp/Camp-Stock/issues/80)) ([c59b50f](https://github.com/bamiyanapp/Camp-Stock/commit/c59b50f7ff01f8ccbd4faa68a9432416901ee3d0))
+
 ## [1.14.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.14.0...v1.14.1) (2026-08-14)
 
 
