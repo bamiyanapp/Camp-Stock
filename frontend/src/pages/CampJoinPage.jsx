@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../api/client.js";
+import BackLink from "../components/BackLink.jsx";
 
 // 招待リンク（/join/:inviteToken）を踏んだ際に表示する画面。
 // マウント時に自動でキャンプへの参加を試み、成功したらキャンプ詳細画面へ
@@ -34,9 +35,7 @@ export default function CampJoinPage() {
     return (
       <div>
         <p className="mb-4 text-error">{error}</p>
-        <Link to="/" className="link">
-          キャンプ一覧へ戻る
-        </Link>
+        <BackLink to="/">キャンプ一覧へ戻る</BackLink>
       </div>
     );
   }
