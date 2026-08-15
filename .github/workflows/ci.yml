@@ -26,5 +26,10 @@ jobs:
       # coverage_check_per_fileは有効にしない（ファイル単位判定にすると
       # このディレクトリが常に閾値未達になってしまう）。
       coverage_threshold: 75
+      # frontend/e2e/配下のPlaywrightテスト（backend/e2e/testServer.jsによる
+      # 実AWS・実Google認証を使わないE2Eテスト基盤、#106）を実行する。
+      # スクリーンショットはJob Summary・PRコメントへ画像として直接埋め込まれる
+      # （dev-standards/docs/cicd-pipeline-specification.md参照）。
+      enable_e2e_test: true
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
