@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.22.0...v1.22.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **cd:** Deploy to AWSジョブでdev-standards submoduleを取得する ([#115](https://github.com/bamiyanapp/Camp-Stock/issues/115)) ([828ea3b](https://github.com/bamiyanapp/Camp-Stock/commit/828ea3b68a82c99a8332565b7538960e8d8a9cca)), closes [#114](https://github.com/bamiyanapp/Camp-Stock/issues/114)
+
 # [1.22.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.21.0...v1.22.0) (2026-08-15)
 
 
