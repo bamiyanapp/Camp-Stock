@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { api } from "../api/client.js";
 
 const VEHICLE_LABELS = { car: "車", bike: "バイク" };
+const PACKED_FILTER_LABELS = { unpacked: "未済", packed: "積み込み済み" };
 
 function groupByCategory(items) {
   const groups = new Map();
@@ -21,6 +22,9 @@ export default function CampDetailPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // 積み込み作業中はまだ積んでいないものだけを見たいことが多いため、
+  // 一覧はデフォルトで未済のみを表示し、タブで積み込み済みと切り替える。
+  const [packedFilter, setPackedFilter] = useState("unpacked");
 
   function reload() {
     setLoading(true);
@@ -63,6 +67,9 @@ export default function CampDetailPage() {
   // 自体は、別画面（CampItemSelectionPage）で行う。
   const usedItems = items.filter((item) => item.used);
   const packedCount = usedItems.filter((item) => item.packed).length;
+  const visibleItems = usedItems.filter((item) =>
+    packedFilter === "packed" ? item.packed : !item.packed
+  );
 
   return (
     <div>
@@ -78,7 +85,7 @@ export default function CampDetailPage() {
           持ち物を選ぶ
         </Link>
       </div>
-      <p className="mb-6 text-sm opacity-70">
+      <p className="mb-4 text-sm opacity-70">
         使用予定 {usedItems.length}件中 {packedCount}件 積み込み済み
       </p>
 
@@ -88,36 +95,60 @@ export default function CampDetailPage() {
         </p>
       ) : (
         <>
-          <div className="mb-2 flex items-center justify-between gap-3 px-2 text-xs font-semibold opacity-70">
-            <span>品名</span>
-            <span>積んだ</span>
+          <div role="tablist" className="tabs tabs-boxed tabs-sm mb-4 w-fit">
+            {Object.entries(PACKED_FILTER_LABELS).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                className={`tab ${packedFilter === value ? "tab-active" : ""}`}
+                onClick={() => setPackedFilter(value)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          {groupByCategory(usedItems).map(([category, categoryItems]) => (
-            <section key={category} className="mb-6">
-              <h3 className="mb-2 font-semibold">{category}</h3>
-              <ul className="flex flex-col gap-1">
-                {categoryItems.map((item) => (
-                  <li
-                    key={item.itemId}
-                    className="flex items-center justify-between gap-3 rounded bg-base-200 p-2"
-                  >
-                    <span>
-                      {item.emoji && <span className="mr-1">{item.emoji}</span>}
-                      {item.name}
-                    </span>
-                    <input
-                      type="checkbox"
-                      className="checkbox"
-                      checked={item.packed}
-                      aria-label={`${item.name}を積んだ`}
-                      onChange={(e) => handleTogglePacked(item.itemId, e.target.checked)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+          {visibleItems.length === 0 ? (
+            <p className="text-sm opacity-70">
+              {packedFilter === "packed"
+                ? "積み込み済みの持ち物はありません。"
+                : "未積み込みの持ち物はありません。"}
+            </p>
+          ) : (
+            <>
+              <div className="mb-2 flex items-center justify-between gap-3 px-2 text-xs font-semibold opacity-70">
+                <span>品名</span>
+                <span>積んだ</span>
+              </div>
+
+              {groupByCategory(visibleItems).map(([category, categoryItems]) => (
+                <section key={category} className="mb-6">
+                  <h3 className="mb-2 font-semibold">{category}</h3>
+                  <ul className="flex flex-col gap-1">
+                    {categoryItems.map((item) => (
+                      <li
+                        key={item.itemId}
+                        className="flex items-center justify-between gap-3 rounded bg-base-200 p-2"
+                      >
+                        <span>
+                          {item.emoji && <span className="mr-1">{item.emoji}</span>}
+                          {item.name}
+                        </span>
+                        <input
+                          type="checkbox"
+                          className="checkbox"
+                          checked={item.packed}
+                          aria-label={`${item.name}を積んだ`}
+                          onChange={(e) => handleTogglePacked(item.itemId, e.target.checked)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </>
+          )}
         </>
       )}
     </div>
