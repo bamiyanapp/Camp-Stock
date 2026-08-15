@@ -119,7 +119,7 @@ describe("CampDetailPage", () => {
     });
   });
 
-  it("チェックボックスの切り替えでは一覧を再取得せず、対象アイテムのみを楽観的に更新する", async () => {
+  it("チェックボックスの切り替えでは一覧を再取得せず、対象アイテムを楽観的に更新して未済一覧から外す", async () => {
     const user = userEvent.setup();
     api.setCampItemPacked.mockResolvedValue({});
     renderPage();
@@ -133,12 +133,13 @@ describe("CampDetailPage", () => {
     await waitFor(() => {
       expect(api.setCampItemPacked).toHaveBeenCalledWith("camp-1", "item-2", true);
     });
-    expect(checkbox).toBeChecked();
+    // 積み込み済みになったため、未済タブ（デフォルト）からは消える
+    expect(screen.queryByText("さいふ")).not.toBeInTheDocument();
     // reload()を伴わないため、一覧の再取得は初回マウント時の1回のみ
     expect(api.listCampItems).toHaveBeenCalledTimes(1);
   });
 
-  it("APIリクエストが失敗した場合、対象のチェックボックスのみ元の状態に戻す", async () => {
+  it("APIリクエストが失敗した場合、対象の持ち物を未済一覧に戻す", async () => {
     const user = userEvent.setup();
     api.setCampItemPacked.mockRejectedValue(new Error("更新に失敗しました"));
     renderPage();
@@ -151,8 +152,80 @@ describe("CampDetailPage", () => {
     await waitFor(() => {
       expect(screen.getByText("更新に失敗しました")).toBeInTheDocument();
     });
-    expect(checkbox).not.toBeChecked();
-    // エラー時も一覧自体は表示されたまま（画面全体が消えない）
-    expect(screen.getByText("さいふ")).toBeInTheDocument();
+    // 失敗時は未済に戻るため、未済タブ（デフォルト）に再度表示される
+    const walletRowAfter = screen.getByText("さいふ").closest("li");
+    expect(walletRowAfter.querySelector('input[type="checkbox"]')).not.toBeChecked();
+  });
+
+  describe("積み込み済み/未済の表示切り替え", () => {
+    beforeEach(() => {
+      api.listCampItems.mockResolvedValue([
+        {
+          itemId: "item-1",
+          name: "テント",
+          category: "住",
+          vehicleType: "car",
+          used: true,
+          packed: false,
+        },
+        {
+          itemId: "item-2",
+          name: "さいふ",
+          category: "携帯品",
+          vehicleType: "both",
+          used: true,
+          packed: true,
+        },
+      ]);
+    });
+
+    it("デフォルトでは未積み込みの持ち物のみを表示する", async () => {
+      renderPage();
+      expect(await screen.findByText("テント")).toBeInTheDocument();
+      expect(screen.queryByText("さいふ")).not.toBeInTheDocument();
+    });
+
+    it("「積み込み済み」タブに切り替えると積み込み済みの持ち物のみ表示する", async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText("テント");
+
+      await user.click(screen.getByRole("tab", { name: "積み込み済み" }));
+
+      expect(screen.getByText("さいふ")).toBeInTheDocument();
+      expect(screen.queryByText("テント")).not.toBeInTheDocument();
+    });
+
+    it("「積み込み済み」タブから「未済」タブに戻すと未積み込みの持ち物のみ表示する", async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText("テント");
+
+      await user.click(screen.getByRole("tab", { name: "積み込み済み" }));
+      await user.click(screen.getByRole("tab", { name: "未済" }));
+
+      expect(screen.getByText("テント")).toBeInTheDocument();
+      expect(screen.queryByText("さいふ")).not.toBeInTheDocument();
+    });
+
+    it("該当する持ち物が無いタブを選ぶと案内文を表示する", async () => {
+      api.listCampItems.mockResolvedValue([
+        {
+          itemId: "item-1",
+          name: "テント",
+          category: "住",
+          vehicleType: "car",
+          used: true,
+          packed: false,
+        },
+      ]);
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText("テント");
+
+      await user.click(screen.getByRole("tab", { name: "積み込み済み" }));
+
+      expect(screen.getByText("積み込み済みの持ち物はありません。")).toBeInTheDocument();
+    });
   });
 });
