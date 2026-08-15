@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.17.0...v1.18.0) (2026-08-15)
+
+
+### Features
+
+* キャンプの持ち物ごとに担当者を割り当てられるようにする ([#94](https://github.com/bamiyanapp/Camp-Stock/issues/94)) ([67ed615](https://github.com/bamiyanapp/Camp-Stock/commit/67ed6150803e3e7444cd944026f3a3277b0493b5)), closes [#41](https://github.com/bamiyanapp/Camp-Stock/issues/41) [#91](https://github.com/bamiyanapp/Camp-Stock/issues/91)
+
 # [1.17.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.16.1...v1.17.0) (2026-08-15)
 
 
