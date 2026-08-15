@@ -41,6 +41,48 @@ function AccountBadge({ user }) {
   return <span>{label} としてログイン中</span>;
 }
 
+// アカウントアイコンをタップすると開閉するメニュー。ログアウトはこの中に
+// 格納し、通常時は画面右上にアイコンのみを表示する。
+function AccountMenu({ user, onLogout }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm px-2"
+        aria-label="アカウントメニュー"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <AccountBadge user={user} />
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-10 cursor-default"
+            aria-label="メニューを閉じる"
+            onClick={() => setOpen(false)}
+          />
+          <ul className="menu dropdown-content absolute right-0 z-20 mt-2 w-40 rounded-box bg-base-200 p-2 shadow">
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onLogout();
+                }}
+              >
+                ログアウト
+              </button>
+            </li>
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
 const buildTimeLabel = new Date(__APP_BUILD_TIME__).toLocaleString("ja-JP", {
   timeZone: "Asia/Tokyo",
   year: "numeric",
@@ -50,8 +92,23 @@ const buildTimeLabel = new Date(__APP_BUILD_TIME__).toLocaleString("ja-JP", {
   minute: "2-digit",
 });
 
-function AppContent() {
+function AppHeader() {
   const { idToken, user, logout } = useAuth();
+  return (
+    <div className="mb-6 flex items-start justify-between">
+      <div>
+        <h1 className="mb-1 text-2xl font-bold">
+          Camp Stock <span className="text-sm font-normal opacity-60">v{__APP_VERSION__}</span>
+        </h1>
+        <p className="text-xs opacity-50">更新日時: {buildTimeLabel}</p>
+      </div>
+      {idToken && user && <AccountMenu user={user} onLogout={() => logout()} />}
+    </div>
+  );
+}
+
+function AppContent() {
+  const { idToken } = useAuth();
 
   if (!idToken) {
     return <LoginPage />;
@@ -59,14 +116,6 @@ function AppContent() {
 
   return (
     <>
-      {user && (
-        <div className="mb-4 flex items-center justify-between text-sm">
-          <AccountBadge user={user} />
-          <button type="button" className="btn btn-sm btn-ghost" onClick={() => logout()}>
-            ログアウト
-          </button>
-        </div>
-      )}
       <Navigation />
       <Routes>
         <Route path="/" element={<CampListPage />} />
@@ -84,10 +133,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <main className="mx-auto max-w-2xl px-4 py-10">
-            <h1 className="mb-1 text-2xl font-bold">
-              Camp Stock <span className="text-sm font-normal opacity-60">v{__APP_VERSION__}</span>
-            </h1>
-            <p className="mb-6 text-xs opacity-50">更新日時: {buildTimeLabel}</p>
+            <AppHeader />
             <AppContent />
           </main>
         </BrowserRouter>
