@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.19.0...v1.20.0) (2026-08-15)
+
+
+### Features
+
+* E2Eテスト基盤を導入する（テストサーバーハーネス・Playwright・認証バイパス） ([#109](https://github.com/bamiyanapp/Camp-Stock/issues/109)) ([23027af](https://github.com/bamiyanapp/Camp-Stock/commit/23027af46dbcb1170ec84d118f8c9c0e1e04c179)), closes [#100](https://github.com/bamiyanapp/Camp-Stock/issues/100) [#106](https://github.com/bamiyanapp/Camp-Stock/issues/106)
+
 # [1.19.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.18.0...v1.19.0) (2026-08-15)
 
 
