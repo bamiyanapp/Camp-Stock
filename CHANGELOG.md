@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.18.0...v1.19.0) (2026-08-15)
+
+
+### Features
+
+* PWA（ホーム画面追加時）でも最新版に更新されるようService Workerを導入する ([#83](https://github.com/bamiyanapp/Camp-Stock/issues/83)) ([a82d7c4](https://github.com/bamiyanapp/Camp-Stock/commit/a82d7c43eda9fbf5b0ba513106c96d37cd1caabf)), closes [#82](https://github.com/bamiyanapp/Camp-Stock/issues/82) [bamiyanapp/dev-standards#205](https://github.com/bamiyanapp/dev-standards/issues/205)
+
 # [1.18.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.17.0...v1.18.0) (2026-08-15)
 
 
