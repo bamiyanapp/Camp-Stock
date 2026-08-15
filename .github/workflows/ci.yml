@@ -16,5 +16,15 @@ jobs:
       # 実ファイルをsymlink共有しているため、bootstrap.js --checkによる
       # symlink欠落・リンク切れの自動検知を有効にする
       enable_standards_check: true
+      # backend/frontendそれぞれの現状のカバレッジ実績（backend: statements
+      # 86.72% / branches 82.27% / functions 82.75% / lines 86.36%、frontend:
+      # statements 88.32% / branches 83.23% / functions 80.74% / lines 87.96%、
+      # 2026-08-15時点）のうち最も低い指標（frontendのfunctions 80.74%）にも
+      # 数ポイントの余裕を持たせた値。backendのsrc/repositories/*
+      # （DynamoDB SDKの薄いラッパーで、in-memory repositoryを使う単体テストでは
+      # 意図的にカバーしない設計）が全体平均を大きく下げているため、
+      # coverage_check_per_fileは有効にしない（ファイル単位判定にすると
+      # このディレクトリが常に閾値未達になってしまう）。
+      coverage_threshold: 75
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
