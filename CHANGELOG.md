@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.22.1...v1.23.0) (2026-08-15)
+
+
+### Features
+
+* 主要フローのE2Eテストを実装し、CIでE2Eを有効化する ([#117](https://github.com/bamiyanapp/Camp-Stock/issues/117)) ([e58d771](https://github.com/bamiyanapp/Camp-Stock/commit/e58d77198e893883e389166377ae3bd0cedb2248)), closes [#107](https://github.com/bamiyanapp/Camp-Stock/issues/107)
+
 ## [1.22.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.22.0...v1.22.1) (2026-08-15)
 
 
