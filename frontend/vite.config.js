@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -31,5 +32,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: "./src/setupTests.js",
+    // e2e/配下はPlaywright（npm run test:e2e）専用のテストで、vitest（npm test）
+    // の対象から除外する。含めると@playwright/testのtest()呼び出しが
+    // vitestランナー内で実行され、実行時エラーになる。
+    exclude: [...configDefaults.exclude, "e2e/**"],
   },
 });
