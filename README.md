@@ -24,6 +24,10 @@ Googleアカウント（Google Identity Services）によるログインを必�
 
 Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケーション）を発行し、承認済みのJavaScript生成元にフロントエンドのURL（CloudFrontドメインなど）を登録しておく必要がある。
 
+## PWA（ホーム画面追加）
+
+`frontend/public/manifest.json`と`index.html`の`apple-mobile-web-app-*` meta タグにより、iOS Safariでホーム画面に追加した際に正式なPWA（スタンドアロン表示）として認識されるようにしている。iOS Safariには、JavaScriptから操作するストレージ（Cookie/localStorage）を一定期間サイトへの直接アクセスがないと予告なく消去するIntelligent Tracking Prevention（ITP）があり、正式なPWAとして認識されることでこの影響が緩和される可能性がある（効果はApple側の非公開の内部動作に依存し保証はできない）。
+
 ## データモデル
 
 - **持ち物マスタ（Items）**: `itemId` / `name` / `emoji`（一覧表示用の絵文字アイコン、任意） / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID） — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ

@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>camp-stock</title>
     <!--
+      正式なPWA（スタンドアロン表示）として認識させるための設定。
+      iOS Safariでホーム画面に追加しただけの簡易的なブックマークではなく
+      manifest.jsonを伴うPWAとして認識されることで、ストレージ
+      （Cookie/localStorage）の永続性が改善する可能性がある
+      （docs参照: iOSのIntelligent Tracking Preventionによる予告なき
+      ストレージ消去が既知の課題のため。効果はApple側の非公開の内部動作に
+      依存し保証はできない）。
+    -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#2f5233" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Camp Stock" />
+    <!--
       PWA起動時の白画面対策（docs/pwa-initial-loading-indicator.md参照）。
       JS・ビルド後CSSに依存しない静的ローディング表示。ReactのcreateRoot(...).render()が
       #rootの中身を丸ごと置き換えるため、マウント完了と同時に自動的に消える
