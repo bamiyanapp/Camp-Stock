@@ -371,4 +371,66 @@ describe("routes", () => {
     });
     expect(result.statusCode).toBe(404);
   });
+
+  it("PUT .../items/{itemId} にassignedUserIdを指定すると担当者を割り当てられる", async () => {
+    let currentUser;
+    const authenticatedRouter = createRouter(setupRoutes(), {
+      authenticate: async () => currentUser,
+    });
+
+    currentUser = { userId: "user-1", name: "オーナー" };
+    const item = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/items",
+      headers: {},
+      body: { name: "テント", category: "住", vehicleType: "car" },
+    });
+    const camp = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps",
+      headers: {},
+      body: { name: "夏キャンプ", vehicleType: "car" },
+    });
+    await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps/join",
+      headers: {},
+      body: { inviteToken: camp.body.inviteToken },
+    });
+
+    currentUser = { userId: "user-2", name: "参加者" };
+    await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps/join",
+      headers: {},
+      body: { inviteToken: camp.body.inviteToken },
+    });
+
+    const assigned = await authenticatedRouter.handleRequest({
+      method: "PUT",
+      path: `/camps/${camp.body.campId}/items/${item.body.itemId}`,
+      headers: {},
+      body: { assignedUserId: "user-2" },
+    });
+    expect(assigned.statusCode).toBe(200);
+    expect(assigned.body.assignedUserId).toBe("user-2");
+
+    const candidates = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: `/camps/${camp.body.campId}/items`,
+      headers: {},
+      body: {},
+    });
+    expect(candidates.body.find((c) => c.itemId === item.body.itemId).assignedUserId).toBe(
+      "user-2"
+    );
+
+    const unassigned = await authenticatedRouter.handleRequest({
+      method: "PUT",
+      path: `/camps/${camp.body.campId}/items/${item.body.itemId}`,
+      headers: {},
+      body: { assignedUserId: null },
+    });
+    expect(unassigned.body.assignedUserId).toBeNull();
+  });
 });

@@ -186,4 +186,63 @@ describe("campItemsService", () => {
     expect(target.used).toBe(false);
     expect(target.packed).toBe(false);
   });
+
+  describe("setAssignee", () => {
+    it("今回使う持ち物に担当者を割り当てる", async () => {
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+      const result = await service.setAssignee("camp-1", "item-car", "user-1", "user-1");
+      expect(result.assignedUserId).toBe("user-1");
+
+      const list = await service.listForCamp("camp-1", "user-1");
+      const target = list.find((r) => r.itemId === "item-car");
+      expect(target.assignedUserId).toBe("user-1");
+    });
+
+    it("nullを指定すると担当者を解除する", async () => {
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+      await service.setAssignee("camp-1", "item-car", "user-1", "user-1");
+
+      const result = await service.setAssignee("camp-1", "item-car", null, "user-1");
+      expect(result.assignedUserId).toBeNull();
+
+      const list = await service.listForCamp("camp-1", "user-1");
+      expect(list.find((r) => r.itemId === "item-car").assignedUserId).toBeNull();
+    });
+
+    it("参加者は他の参加者を担当者として割り当てられる", async () => {
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+      await campMembersRepository.put({ campId: "camp-1", userId: "user-2", joinedAt: "2026-01-02T00:00:00.000Z" });
+
+      const result = await service.setAssignee("camp-1", "item-car", "user-2", "user-2");
+      expect(result.assignedUserId).toBe("user-2");
+    });
+
+    it("今回使う状態でない持ち物に対してはNotFoundErrorを投げる", async () => {
+      await expect(
+        service.setAssignee("camp-1", "item-car", "user-1", "user-1")
+      ).rejects.toThrow(/not marked as used/);
+    });
+
+    it("招待されていない他ユーザーはForbiddenErrorを投げる", async () => {
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+      await expect(
+        service.setAssignee("camp-1", "item-car", "user-2", "user-2")
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it("積み込み状態は担当者の変更で保持される", async () => {
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+      await service.setPacked("camp-1", "item-car", true, "user-1");
+
+      const result = await service.setAssignee("camp-1", "item-car", "user-1", "user-1");
+      expect(result.packed).toBe(true);
+    });
+  });
+
+  it("seedAllMatchingItems: 担当者は未割り当て（null）で初期化する", async () => {
+    await service.seedAllMatchingItems("camp-1");
+
+    const list = await service.listForCamp("camp-1", "user-1");
+    expect(list.every((r) => r.assignedUserId === null)).toBe(true);
+  });
 });

@@ -37,6 +37,7 @@ export function createCampItemsService({
             ...item,
             used: Boolean(campItem),
             packed: campItem ? Boolean(campItem.packed) : false,
+            assignedUserId: campItem ? campItem.assignedUserId || null : null,
           };
         });
     },
@@ -56,7 +57,7 @@ export function createCampItemsService({
 
       if (!used) {
         await campItemsRepository.delete(campId, itemId);
-        return { campId, itemId, used: false, packed: false };
+        return { campId, itemId, used: false, packed: false, assignedUserId: null };
       }
 
       const existing = await campItemsRepository.get(campId, itemId);
@@ -66,6 +67,7 @@ export function createCampItemsService({
           itemId,
           used: true,
           packed: Boolean(existing.packed),
+          assignedUserId: existing.assignedUserId || null,
         };
       }
       const now = new Date().toISOString();
@@ -73,11 +75,12 @@ export function createCampItemsService({
         campId,
         itemId,
         packed: false,
+        assignedUserId: null,
         addedAt: now,
         updatedAt: now,
       };
       await campItemsRepository.put(campItem);
-      return { campId, itemId, used: true, packed: false };
+      return { campId, itemId, used: true, packed: false, assignedUserId: null };
     },
 
     // 新しいキャンプ作成直後に呼び出し、移動手段が対応する持ち物マスタ全件を
@@ -100,6 +103,7 @@ export function createCampItemsService({
             campId,
             itemId: item.itemId,
             packed: false,
+            assignedUserId: null,
             addedAt: now,
             updatedAt: now,
           })
@@ -125,7 +129,43 @@ export function createCampItemsService({
         updatedAt: new Date().toISOString(),
       };
       await campItemsRepository.put(updated);
-      return { campId, itemId, used: true, packed: updated.packed };
+      return {
+        campId,
+        itemId,
+        used: true,
+        packed: updated.packed,
+        assignedUserId: updated.assignedUserId || null,
+      };
+    },
+
+    // 持ち物ごとの担当者（誰が持ってくるか）を設定・解除する。「今回使う」に
+    // 選択されている（CampItemsレコードが存在する）持ち物のみ対象。
+    // nullを渡すと未割り当てに戻す。
+    async setAssignee(campId, itemId, assignedUserId, userId) {
+      const camp = await campsRepository.get(campId);
+      if (!camp) {
+        throw new NotFoundError(`camp not found: ${campId}`);
+      }
+      await assertCampMember(camp, userId, campMembersRepository);
+      const existing = await campItemsRepository.get(campId, itemId);
+      if (!existing) {
+        throw new NotFoundError(
+          `item is not marked as used for this camp: ${itemId}`
+        );
+      }
+      const updated = {
+        ...existing,
+        assignedUserId: assignedUserId || null,
+        updatedAt: new Date().toISOString(),
+      };
+      await campItemsRepository.put(updated);
+      return {
+        campId,
+        itemId,
+        used: true,
+        packed: Boolean(updated.packed),
+        assignedUserId: updated.assignedUserId,
+      };
     },
   };
 }

@@ -121,6 +121,15 @@ export function buildRoutes({ itemsService, campsService, campItemsService, camp
           );
           return { statusCode: 200, body: result };
         }
+        if ("assignedUserId" in body) {
+          const result = await campItemsService.setAssignee(
+            params.campId,
+            params.itemId,
+            body.assignedUserId,
+            user?.userId
+          );
+          return { statusCode: 200, body: result };
+        }
         const result = await campItemsService.setPacked(
           params.campId,
           params.itemId,
