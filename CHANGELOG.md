@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.21.0...v1.22.0) (2026-08-15)
+
+
+### Features
+
+* 招待リンクをQRコードで共有できるようにする ([#105](https://github.com/bamiyanapp/Camp-Stock/issues/105)) ([5449cad](https://github.com/bamiyanapp/Camp-Stock/commit/5449cad09e0d40ff2afa15f1249f0a9d9571d1c8)), closes [#99](https://github.com/bamiyanapp/Camp-Stock/issues/99)
+
 # [1.21.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.20.0...v1.21.0) (2026-08-15)
 
 
