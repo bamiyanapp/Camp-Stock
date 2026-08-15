@@ -1,24 +1,27 @@
 import { matchesVehicle } from "../domain/vehicleType.js";
 import { NotFoundError } from "../lib/errors.js";
-import { assertCampOwner } from "./campsService.js";
+import { assertCampMember } from "./campAuthorization.js";
 
 // キャンプごとの持ち物状態は、CampItemsテーブルに「今回使う」として選択された
 // アイテムのレコードのみを持つ設計にする（レコードが存在する = used）。
 // 積んだかどうか（packed）はそのレコードの属性として管理する。
+// 使用/積み込みの操作は、所有者に限らずキャンプの参加者全員に許可する
+// （招待リンクによる複数参加者対応、#90）。
 export function createCampItemsService({
   campsRepository,
   itemsRepository,
   campItemsRepository,
+  campMembersRepository,
 }) {
   return {
     // 持ち物マスタのうち、キャンプの移動手段に対応する候補一覧を、
     // このキャンプでの使用中/積み込み状態とマージして返す。
-    async listForCamp(campId, ownerUserId) {
+    async listForCamp(campId, userId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
       const [allItems, campItems] = await Promise.all([
         itemsRepository.list(),
         campItemsRepository.listByCamp(campId),
@@ -34,11 +37,12 @@ export function createCampItemsService({
             ...item,
             used: Boolean(campItem),
             packed: campItem ? Boolean(campItem.packed) : false,
+            assignedUserId: campItem ? campItem.assignedUserId || null : null,
           };
         });
     },
 
-    async setUsed(campId, itemId, used, ownerUserId) {
+    async setUsed(campId, itemId, used, userId) {
       const [camp, item] = await Promise.all([
         campsRepository.get(campId),
         itemsRepository.get(itemId),
@@ -49,11 +53,11 @@ export function createCampItemsService({
       if (!item) {
         throw new NotFoundError(`item not found: ${itemId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
 
       if (!used) {
         await campItemsRepository.delete(campId, itemId);
-        return { campId, itemId, used: false, packed: false };
+        return { campId, itemId, used: false, packed: false, assignedUserId: null };
       }
 
       const existing = await campItemsRepository.get(campId, itemId);
@@ -63,6 +67,7 @@ export function createCampItemsService({
           itemId,
           used: true,
           packed: Boolean(existing.packed),
+          assignedUserId: existing.assignedUserId || null,
         };
       }
       const now = new Date().toISOString();
@@ -70,11 +75,12 @@ export function createCampItemsService({
         campId,
         itemId,
         packed: false,
+        assignedUserId: null,
         addedAt: now,
         updatedAt: now,
       };
       await campItemsRepository.put(campItem);
-      return { campId, itemId, used: true, packed: false };
+      return { campId, itemId, used: true, packed: false, assignedUserId: null };
     },
 
     // 新しいキャンプ作成直後に呼び出し、移動手段が対応する持ち物マスタ全件を
@@ -97,6 +103,7 @@ export function createCampItemsService({
             campId,
             itemId: item.itemId,
             packed: false,
+            assignedUserId: null,
             addedAt: now,
             updatedAt: now,
           })
@@ -104,12 +111,12 @@ export function createCampItemsService({
       );
     },
 
-    async setPacked(campId, itemId, packed, ownerUserId) {
+    async setPacked(campId, itemId, packed, userId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
       const existing = await campItemsRepository.get(campId, itemId);
       if (!existing) {
         throw new NotFoundError(
@@ -122,7 +129,43 @@ export function createCampItemsService({
         updatedAt: new Date().toISOString(),
       };
       await campItemsRepository.put(updated);
-      return { campId, itemId, used: true, packed: updated.packed };
+      return {
+        campId,
+        itemId,
+        used: true,
+        packed: updated.packed,
+        assignedUserId: updated.assignedUserId || null,
+      };
+    },
+
+    // 持ち物ごとの担当者（誰が持ってくるか）を設定・解除する。「今回使う」に
+    // 選択されている（CampItemsレコードが存在する）持ち物のみ対象。
+    // nullを渡すと未割り当てに戻す。
+    async setAssignee(campId, itemId, assignedUserId, userId) {
+      const camp = await campsRepository.get(campId);
+      if (!camp) {
+        throw new NotFoundError(`camp not found: ${campId}`);
+      }
+      await assertCampMember(camp, userId, campMembersRepository);
+      const existing = await campItemsRepository.get(campId, itemId);
+      if (!existing) {
+        throw new NotFoundError(
+          `item is not marked as used for this camp: ${itemId}`
+        );
+      }
+      const updated = {
+        ...existing,
+        assignedUserId: assignedUserId || null,
+        updatedAt: new Date().toISOString(),
+      };
+      await campItemsRepository.put(updated);
+      return {
+        campId,
+        itemId,
+        used: true,
+        packed: Boolean(updated.packed),
+        assignedUserId: updated.assignedUserId,
+      };
     },
   };
 }

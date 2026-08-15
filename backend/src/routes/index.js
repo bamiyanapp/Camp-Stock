@@ -1,4 +1,4 @@
-export function buildRoutes({ itemsService, campsService, campItemsService }) {
+export function buildRoutes({ itemsService, campsService, campItemsService, campMembersService }) {
   return [
     {
       method: "GET",
@@ -42,10 +42,22 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
       method: "POST",
       path: "/camps",
       handler: async ({ body, user }) => {
-        const camp = await campsService.create(body, user?.userId);
+        const camp = await campsService.create(body, user?.userId, {
+          name: user?.name,
+          email: user?.email,
+          picture: user?.picture,
+        });
         await campItemsService.seedAllMatchingItems(camp.campId);
         return { statusCode: 201, body: camp };
       },
+    },
+    {
+      method: "POST",
+      path: "/camps/join",
+      handler: async ({ body, user }) => ({
+        statusCode: 200,
+        body: await campMembersService.join(body.inviteToken, user),
+      }),
     },
     {
       method: "GET",
@@ -71,6 +83,22 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
         return { statusCode: 204, body: null };
       },
     },
+    {
+      method: "GET",
+      path: "/camps/{campId}/members",
+      handler: async ({ params, user }) => ({
+        statusCode: 200,
+        body: await campMembersService.listMembers(params.campId, user?.userId),
+      }),
+    },
+    {
+      method: "POST",
+      path: "/camps/{campId}/invite-token",
+      handler: async ({ params, user }) => ({
+        statusCode: 200,
+        body: await campMembersService.regenerateInviteToken(params.campId, user?.userId),
+      }),
+    },
 
     {
       method: "GET",
@@ -89,6 +117,15 @@ export function buildRoutes({ itemsService, campsService, campItemsService }) {
             params.campId,
             params.itemId,
             body.used,
+            user?.userId
+          );
+          return { statusCode: 200, body: result };
+        }
+        if ("assignedUserId" in body) {
+          const result = await campItemsService.setAssignee(
+            params.campId,
+            params.itemId,
+            body.assignedUserId,
             user?.userId
           );
           return { statusCode: 200, body: result };

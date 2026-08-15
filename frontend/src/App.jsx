@@ -7,6 +7,7 @@ import LoginPage from "./auth/LoginPage.jsx";
 import CampListPage from "./pages/CampListPage.jsx";
 import CampDetailPage from "./pages/CampDetailPage.jsx";
 import CampItemSelectionPage from "./pages/CampItemSelectionPage.jsx";
+import CampJoinPage from "./pages/CampJoinPage.jsx";
 import ItemsPage from "./pages/ItemsPage.jsx";
 import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration.jsx";
 import UpdateNotifier from "./components/UpdateNotifier.jsx";
@@ -123,6 +124,7 @@ function AppContent() {
         <Route path="/" element={<CampListPage />} />
         <Route path="/camps/:campId" element={<CampDetailPage />} />
         <Route path="/camps/:campId/select-items" element={<CampItemSelectionPage />} />
+        <Route path="/join/:inviteToken" element={<CampJoinPage />} />
         <Route path="/items" element={<ItemsPage />} />
       </Routes>
     </>

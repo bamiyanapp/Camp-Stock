@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { ValidationError, NotFoundError, ForbiddenError } from "../lib/errors.js";
+import { ValidationError, NotFoundError } from "../lib/errors.js";
+import { assertCampOwner, assertCampMember } from "./campAuthorization.js";
+
+export { assertCampOwner };
 
 const CAMP_VEHICLE_TYPES = ["car", "bike"];
 
@@ -12,33 +15,34 @@ function validateInput({ name, vehicleType }) {
   }
 }
 
-// キャンプはユーザー個別データのため、所有者（ownerUserId）と一致しない
-// リクエストは常に403で拒否する。campItemsService（campsServiceの外から
-// キャンプの所有者チェックが必要な箇所）でも再利用する。
-export function assertCampOwner(camp, ownerUserId) {
-  if ((camp.ownerUserId || null) !== (ownerUserId || null)) {
-    throw new ForbiddenError(`camp is not owned by the requesting user: ${camp.campId}`);
-  }
-}
-
-export function createCampsService(campsRepository) {
+export function createCampsService(campsRepository, campMembersRepository) {
   return {
-    async list(ownerUserId) {
-      const camps = await campsRepository.list();
-      const owner = ownerUserId || null;
-      return camps.filter((camp) => (camp.ownerUserId || null) === owner);
+    // 自分が所有者のキャンプに加え、招待リンクで参加済みのキャンプも一覧に含める。
+    async list(userId) {
+      const [camps, memberships] = await Promise.all([
+        campsRepository.list(),
+        campMembersRepository.list(),
+      ]);
+      const owner = userId || null;
+      const memberCampIds = new Set(
+        memberships.filter((m) => m.userId === owner).map((m) => m.campId)
+      );
+      return camps.filter(
+        (camp) => (camp.ownerUserId || null) === owner || memberCampIds.has(camp.campId)
+      );
     },
 
-    async get(campId, ownerUserId) {
+    // 所有者・参加者であれば取得可能（参照系のため、編集不可の参加者にも許可する）。
+    async get(campId, userId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
       return camp;
     },
 
-    async create({ name, date, vehicleType }, ownerUserId) {
+    async create({ name, date, vehicleType }, ownerUserId, ownerProfile = {}) {
       validateInput({ name, vehicleType });
       const now = new Date().toISOString();
       const camp = {
@@ -47,12 +51,19 @@ export function createCampsService(campsRepository) {
         date: date || null,
         vehicleType,
         ownerUserId: ownerUserId || null,
+        ownerName: ownerProfile.name || null,
+        ownerEmail: ownerProfile.email || null,
+        ownerPicture: ownerProfile.picture || null,
+        // 招待リンクの元になるトークン。所有者はcampMembersService.
+        // regenerateInviteTokenでいつでも再発行できる。
+        inviteToken: randomUUID(),
         createdAt: now,
         updatedAt: now,
       };
       return campsRepository.put(camp);
     },
 
+    // キャンプ設定の変更は所有者のみ許可する（参加者は不可）。
     async update(campId, { name, date, vehicleType }, ownerUserId) {
       const existing = await campsRepository.get(campId);
       if (!existing) {
@@ -70,6 +81,7 @@ export function createCampsService(campsRepository) {
       return campsRepository.put(updated);
     },
 
+    // キャンプの削除は所有者のみ許可する（参加者は不可）。
     async remove(campId, ownerUserId) {
       const existing = await campsRepository.get(campId);
       if (!existing) {

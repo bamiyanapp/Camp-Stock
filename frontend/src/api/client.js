@@ -48,6 +48,12 @@ export const api = {
     request(`/camps/${campId}`, { method: "PUT", body: JSON.stringify(camp) }),
   deleteCamp: (campId) => request(`/camps/${campId}`, { method: "DELETE" }),
 
+  listCampMembers: (campId) => request(`/camps/${campId}/members`),
+  regenerateCampInviteToken: (campId) =>
+    request(`/camps/${campId}/invite-token`, { method: "POST" }),
+  joinCamp: (inviteToken) =>
+    request("/camps/join", { method: "POST", body: JSON.stringify({ inviteToken }) }),
+
   listCampItems: (campId) => request(`/camps/${campId}/items`),
   setCampItemUsed: (campId, itemId, used) =>
     request(`/camps/${campId}/items/${itemId}`, {
@@ -58,5 +64,10 @@ export const api = {
     request(`/camps/${campId}/items/${itemId}`, {
       method: "PUT",
       body: JSON.stringify({ packed }),
+    }),
+  setCampItemAssignee: (campId, itemId, assignedUserId) =>
+    request(`/camps/${campId}/items/${itemId}`, {
+      method: "PUT",
+      body: JSON.stringify({ assignedUserId }),
     }),
 };

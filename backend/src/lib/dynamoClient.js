@@ -18,4 +18,5 @@ export const TABLE_NAMES = {
   items: process.env.ITEMS_TABLE_NAME || "camp-stock-items",
   camps: process.env.CAMPS_TABLE_NAME || "camp-stock-camps",
   campItems: process.env.CAMP_ITEMS_TABLE_NAME || "camp-stock-camp-items",
+  campMembers: process.env.CAMP_MEMBERS_TABLE_NAME || "camp-stock-camp-members",
 };

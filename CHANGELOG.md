@@ -1,3 +1,31 @@
+# [1.18.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.17.0...v1.18.0) (2026-08-15)
+
+
+### Features
+
+* キャンプの持ち物ごとに担当者を割り当てられるようにする ([#94](https://github.com/bamiyanapp/Camp-Stock/issues/94)) ([67ed615](https://github.com/bamiyanapp/Camp-Stock/commit/67ed6150803e3e7444cd944026f3a3277b0493b5)), closes [#41](https://github.com/bamiyanapp/Camp-Stock/issues/41) [#91](https://github.com/bamiyanapp/Camp-Stock/issues/91)
+
+# [1.17.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.16.1...v1.17.0) (2026-08-15)
+
+
+### Features
+
+* キャンプに招待リンクで複数参加者を招待・参加できるようにする ([#92](https://github.com/bamiyanapp/Camp-Stock/issues/92)) ([b20fa86](https://github.com/bamiyanapp/Camp-Stock/commit/b20fa8600b3a92a2663a7dcdd8868f78419c4777)), closes [#41](https://github.com/bamiyanapp/Camp-Stock/issues/41) [#90](https://github.com/bamiyanapp/Camp-Stock/issues/90)
+
+## [1.16.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.16.0...v1.16.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* iOSのホーム画面追加アプリとして正式に認識されるようmanifest.jsonを追加する ([#88](https://github.com/bamiyanapp/Camp-Stock/issues/88)) ([8c24316](https://github.com/bamiyanapp/Camp-Stock/commit/8c24316fcb6afbf48869f07dd42f7da594a08c30))
+
+# [1.16.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.15.0...v1.16.0) (2026-08-15)
+
+
+### Features
+
+* **frontend:** キャンプ詳細画面の持ち物一覧に積み込み済み/未済の表示切り替えを追加する ([#85](https://github.com/bamiyanapp/Camp-Stock/issues/85)) ([d772d6c](https://github.com/bamiyanapp/Camp-Stock/commit/d772d6ceefb1525539237a0e70741756f801919b))
+
 # [1.15.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.14.1...v1.15.0) (2026-08-15)
 
 
