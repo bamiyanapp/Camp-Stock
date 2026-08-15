@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.16.0...v1.16.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* iOSのホーム画面追加アプリとして正式に認識されるようmanifest.jsonを追加する ([#88](https://github.com/bamiyanapp/Camp-Stock/issues/88)) ([8c24316](https://github.com/bamiyanapp/Camp-Stock/commit/8c24316fcb6afbf48869f07dd42f7da594a08c30))
+
 # [1.16.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.15.0...v1.16.0) (2026-08-15)
 
 
