@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.16.1...v1.17.0) (2026-08-15)
+
+
+### Features
+
+* キャンプに招待リンクで複数参加者を招待・参加できるようにする ([#92](https://github.com/bamiyanapp/Camp-Stock/issues/92)) ([b20fa86](https://github.com/bamiyanapp/Camp-Stock/commit/b20fa8600b3a92a2663a7dcdd8868f78419c4777)), closes [#41](https://github.com/bamiyanapp/Camp-Stock/issues/41) [#90](https://github.com/bamiyanapp/Camp-Stock/issues/90)
+
 ## [1.16.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.16.0...v1.16.1) (2026-08-15)
 
 
