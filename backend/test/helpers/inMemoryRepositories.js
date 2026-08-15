@@ -36,6 +36,31 @@ export function createInMemoryCampsRepository(initialCamps = []) {
   };
 }
 
+export function createInMemoryCampMembersRepository(initialMembers = []) {
+  const key = (campId, userId) => `${campId}#${userId}`;
+  const members = new Map(
+    initialMembers.map((member) => [key(member.campId, member.userId), member])
+  );
+  return {
+    async list() {
+      return [...members.values()];
+    },
+    async listByCamp(campId) {
+      return [...members.values()].filter((m) => m.campId === campId);
+    },
+    async get(campId, userId) {
+      return members.get(key(campId, userId)) || null;
+    },
+    async put(member) {
+      members.set(key(member.campId, member.userId), member);
+      return member;
+    },
+    async delete(campId, userId) {
+      members.delete(key(campId, userId));
+    },
+  };
+}
+
 export function createInMemoryCampItemsRepository(initialCampItems = []) {
   const key = (campId, itemId) => `${campId}#${itemId}`;
   const campItems = new Map(

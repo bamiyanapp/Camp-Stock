@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "../api/client.js";
+import { useAuth } from "../auth/useAuth.js";
 
 const VEHICLE_LABELS = { car: "車", bike: "バイク" };
 const PACKED_FILTER_LABELS = { unpacked: "未済", packed: "積み込み済み" };
@@ -18,8 +19,10 @@ function groupByCategory(items) {
 
 export default function CampDetailPage() {
   const { campId } = useParams();
+  const { user } = useAuth();
   const [camp, setCamp] = useState(null);
   const [items, setItems] = useState([]);
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   // 積み込み作業中はまだ積んでいないものだけを見たいことが多いため、
@@ -28,10 +31,11 @@ export default function CampDetailPage() {
 
   function reload() {
     setLoading(true);
-    Promise.all([api.getCamp(campId), api.listCampItems(campId)])
-      .then(([campResult, itemsResult]) => {
+    Promise.all([api.getCamp(campId), api.listCampItems(campId), api.listCampMembers(campId)])
+      .then(([campResult, itemsResult, membersResult]) => {
         setCamp(campResult);
         setItems(itemsResult);
+        setMembers(membersResult);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -56,6 +60,15 @@ export default function CampDetailPage() {
     }
   }
 
+  async function handleRegenerateInvite() {
+    try {
+      const updated = await api.regenerateCampInviteToken(campId);
+      setCamp(updated);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   if (loading) {
     return <p>読み込み中...</p>;
   }
@@ -70,6 +83,8 @@ export default function CampDetailPage() {
   const visibleItems = usedItems.filter((item) =>
     packedFilter === "packed" ? item.packed : !item.packed
   );
+  const isOwner = Boolean(user) && camp.ownerUserId === user.sub;
+  const inviteUrl = camp.inviteToken ? `${window.location.origin}/join/${camp.inviteToken}` : "";
 
   return (
     <div>
@@ -88,6 +103,40 @@ export default function CampDetailPage() {
       <p className="mb-4 text-sm opacity-70">
         使用予定 {usedItems.length}件中 {packedCount}件 積み込み済み
       </p>
+
+      {members.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+          <span className="opacity-70">参加者:</span>
+          {members.map((member) => (
+            <span key={member.userId} className="badge badge-outline">
+              {member.name || member.email || "unknown"}
+              {member.role === "owner" && "（作成者）"}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {isOwner && (
+        <div className="mb-6 rounded bg-base-200 p-3">
+          <p className="mb-2 text-sm font-semibold">招待リンク</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              readOnly
+              className="input input-bordered input-sm flex-1"
+              value={inviteUrl}
+              aria-label="招待リンク"
+              onFocus={(e) => e.target.select()}
+            />
+            <button type="button" className="btn btn-sm btn-ghost" onClick={handleRegenerateInvite}>
+              再発行
+            </button>
+          </div>
+          <p className="mt-1 text-xs opacity-60">
+            このリンクを開いたユーザーは誰でもこのキャンプに参加できます。再発行すると古いリンクは無効になります。
+          </p>
+        </div>
+      )}
 
       {usedItems.length === 0 ? (
         <p className="text-sm opacity-70">

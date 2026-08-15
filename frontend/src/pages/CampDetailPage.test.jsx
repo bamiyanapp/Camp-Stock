@@ -3,34 +3,70 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import CampDetailPage from "./CampDetailPage.jsx";
+import { AuthProvider } from "../auth/AuthContext.jsx";
 import { api } from "../api/client.js";
+
+const STORAGE_KEY = "camp-stock-id-token";
 
 vi.mock("../api/client.js", () => ({
   api: {
     getCamp: vi.fn(),
     listCampItems: vi.fn(),
+    listCampMembers: vi.fn(),
     setCampItemPacked: vi.fn(),
+    regenerateCampInviteToken: vi.fn(),
   },
+  setAuthToken: vi.fn(),
+  setUnauthorizedHandler: vi.fn(),
 }));
+
+// btoaはLatin1範囲外の文字（日本語名等）を扱えないため、UTF-8バイト列に
+// 変換してからエンコードする。
+function base64UrlEncode(obj) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// jwt-decodeは署名検証を行わずpayloadをbase64url decodeするだけのため、
+// テストではダミーの署名を持つJWT形式の文字列で十分。
+function fakeIdToken(payload) {
+  return `${base64UrlEncode({ alg: "none" })}.${base64UrlEncode(payload)}.signature`;
+}
+
+function setSessionCookie(payload) {
+  document.cookie = `${STORAGE_KEY}=${encodeURIComponent(fakeIdToken(payload))}; Path=/`;
+}
+
+function clearSessionCookie() {
+  document.cookie = `${STORAGE_KEY}=; Path=/; Max-Age=0`;
+}
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={["/camps/camp-1"]}>
-      <Routes>
-        <Route path="/camps/:campId" element={<CampDetailPage />} />
-      </Routes>
-    </MemoryRouter>
+    <AuthProvider>
+      <MemoryRouter initialEntries={["/camps/camp-1"]}>
+        <Routes>
+          <Route path="/camps/:campId" element={<CampDetailPage />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>
   );
 }
 
 describe("CampDetailPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    clearSessionCookie();
     api.getCamp.mockResolvedValue({
       campId: "camp-1",
       name: "夏キャンプ",
       vehicleType: "car",
+      ownerUserId: "owner-sub",
+      inviteToken: "invite-token-1",
     });
+    api.listCampMembers.mockResolvedValue([]);
     api.listCampItems.mockResolvedValue([
       {
         itemId: "item-1",
@@ -226,6 +262,67 @@ describe("CampDetailPage", () => {
       await user.click(screen.getByRole("tab", { name: "積み込み済み" }));
 
       expect(screen.getByText("積み込み済みの持ち物はありません。")).toBeInTheDocument();
+    });
+  });
+
+  describe("招待リンク・参加者", () => {
+    it("参加者一覧をバッジで表示する", async () => {
+      api.listCampMembers.mockResolvedValue([
+        { userId: "owner-sub", role: "owner", name: "オーナー", email: null },
+        { userId: "member-sub", role: "member", name: "参加者", email: null },
+      ]);
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      expect(screen.getByText("オーナー（作成者）")).toBeInTheDocument();
+      expect(screen.getByText("参加者")).toBeInTheDocument();
+    });
+
+    it("所有者としてログインしている場合、招待リンクが表示される", async () => {
+      setSessionCookie({ sub: "owner-sub", name: "オーナー" });
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      const inviteInput = screen.getByLabelText("招待リンク");
+      expect(inviteInput.value).toContain("/join/invite-token-1");
+    });
+
+    it("所有者以外としてログインしている場合、招待リンクは表示されない", async () => {
+      setSessionCookie({ sub: "member-sub", name: "参加者" });
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      expect(screen.queryByLabelText("招待リンク")).not.toBeInTheDocument();
+    });
+
+    it("未ログイン状態では招待リンクは表示されない", async () => {
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      expect(screen.queryByLabelText("招待リンク")).not.toBeInTheDocument();
+    });
+
+    it("「再発行」ボタンでregenerateCampInviteTokenを呼び、新しいリンクに更新する", async () => {
+      const user = userEvent.setup();
+      setSessionCookie({ sub: "owner-sub", name: "オーナー" });
+      api.regenerateCampInviteToken.mockResolvedValue({
+        campId: "camp-1",
+        name: "夏キャンプ",
+        vehicleType: "car",
+        ownerUserId: "owner-sub",
+        inviteToken: "invite-token-2",
+      });
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      await user.click(screen.getByRole("button", { name: "再発行" }));
+
+      await waitFor(() => {
+        expect(api.regenerateCampInviteToken).toHaveBeenCalledWith("camp-1");
+      });
+      await waitFor(() => {
+        expect(screen.getByLabelText("招待リンク").value).toContain("/join/invite-token-2");
+      });
     });
   });
 });

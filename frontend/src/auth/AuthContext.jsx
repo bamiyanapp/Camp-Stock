@@ -29,7 +29,14 @@ function decodeUser(idToken) {
   }
   try {
     const payload = jwtDecode(idToken);
-    return { name: payload.name, email: payload.email, picture: payload.picture };
+    // subはGoogleアカウントの一意なID（バックエンドのownerUserId等と同じ値）。
+    // キャンプの所有者判定（招待リンクの表示可否等）に使う。
+    return {
+      sub: payload.sub,
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture,
+    };
   } catch {
     return null;
   }

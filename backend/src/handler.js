@@ -2,9 +2,11 @@ import { getDocumentClient } from "./lib/dynamoClient.js";
 import { createItemsRepository } from "./repositories/itemsRepository.js";
 import { createCampsRepository } from "./repositories/campsRepository.js";
 import { createCampItemsRepository } from "./repositories/campItemsRepository.js";
+import { createCampMembersRepository } from "./repositories/campMembersRepository.js";
 import { createItemsService } from "./services/itemsService.js";
 import { createCampsService } from "./services/campsService.js";
 import { createCampItemsService } from "./services/campItemsService.js";
+import { createCampMembersService } from "./services/campMembersService.js";
 import { createRouter } from "./router.js";
 import { buildRoutes } from "./routes/index.js";
 import { createGoogleAuthenticator } from "./lib/googleAuth.js";
@@ -41,13 +43,19 @@ export async function handler(event) {
   const itemsRepository = createItemsRepository(documentClient);
   const campsRepository = createCampsRepository(documentClient);
   const campItemsRepository = createCampItemsRepository(documentClient);
+  const campMembersRepository = createCampMembersRepository(documentClient);
 
   const itemsService = createItemsService(itemsRepository);
-  const campsService = createCampsService(campsRepository);
+  const campsService = createCampsService(campsRepository, campMembersRepository);
   const campItemsService = createCampItemsService({
     campsRepository,
     itemsRepository,
     campItemsRepository,
+    campMembersRepository,
+  });
+  const campMembersService = createCampMembersService({
+    campsRepository,
+    campMembersRepository,
   });
 
   const authenticate = createGoogleAuthenticator({
@@ -55,7 +63,7 @@ export async function handler(event) {
   });
 
   const router = createRouter(
-    buildRoutes({ itemsService, campsService, campItemsService }),
+    buildRoutes({ itemsService, campsService, campItemsService, campMembersService }),
     { authenticate }
   );
 
