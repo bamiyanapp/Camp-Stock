@@ -1,24 +1,27 @@
 import { matchesVehicle } from "../domain/vehicleType.js";
 import { NotFoundError } from "../lib/errors.js";
-import { assertCampOwner } from "./campsService.js";
+import { assertCampMember } from "./campAuthorization.js";
 
 // キャンプごとの持ち物状態は、CampItemsテーブルに「今回使う」として選択された
 // アイテムのレコードのみを持つ設計にする（レコードが存在する = used）。
 // 積んだかどうか（packed）はそのレコードの属性として管理する。
+// 使用/積み込みの操作は、所有者に限らずキャンプの参加者全員に許可する
+// （招待リンクによる複数参加者対応、#90）。
 export function createCampItemsService({
   campsRepository,
   itemsRepository,
   campItemsRepository,
+  campMembersRepository,
 }) {
   return {
     // 持ち物マスタのうち、キャンプの移動手段に対応する候補一覧を、
     // このキャンプでの使用中/積み込み状態とマージして返す。
-    async listForCamp(campId, ownerUserId) {
+    async listForCamp(campId, userId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
       const [allItems, campItems] = await Promise.all([
         itemsRepository.list(),
         campItemsRepository.listByCamp(campId),
@@ -38,7 +41,7 @@ export function createCampItemsService({
         });
     },
 
-    async setUsed(campId, itemId, used, ownerUserId) {
+    async setUsed(campId, itemId, used, userId) {
       const [camp, item] = await Promise.all([
         campsRepository.get(campId),
         itemsRepository.get(itemId),
@@ -49,7 +52,7 @@ export function createCampItemsService({
       if (!item) {
         throw new NotFoundError(`item not found: ${itemId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
 
       if (!used) {
         await campItemsRepository.delete(campId, itemId);
@@ -104,12 +107,12 @@ export function createCampItemsService({
       );
     },
 
-    async setPacked(campId, itemId, packed, ownerUserId) {
+    async setPacked(campId, itemId, packed, userId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
-      assertCampOwner(camp, ownerUserId);
+      await assertCampMember(camp, userId, campMembersRepository);
       const existing = await campItemsRepository.get(campId, itemId);
       if (!existing) {
         throw new NotFoundError(

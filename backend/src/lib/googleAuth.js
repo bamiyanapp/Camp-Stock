@@ -24,6 +24,11 @@ export function createGoogleAuthenticator({ clientId, oAuth2Client }) {
       throw new UnauthorizedError("認証情報が無効です");
     }
 
-    return { userId: payload.sub, email: payload.email, name: payload.name };
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      picture: payload.picture,
+    };
   };
 }

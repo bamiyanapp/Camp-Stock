@@ -1,39 +1,46 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createRouter } from "../src/router.js";
 import { buildRoutes } from "../src/routes/index.js";
 import { createItemsService } from "../src/services/itemsService.js";
 import { createCampsService } from "../src/services/campsService.js";
 import { createCampItemsService } from "../src/services/campItemsService.js";
+import { createCampMembersService } from "../src/services/campMembersService.js";
 import {
   createInMemoryItemsRepository,
   createInMemoryCampsRepository,
   createInMemoryCampItemsRepository,
+  createInMemoryCampMembersRepository,
 } from "./helpers/inMemoryRepositories.js";
 
 // router + routes + services + インメモリrepositoryを結合した、
-// HTTPリクエスト相当の入出力を検証するテスト。
-describe("routes", () => {
-  let router;
+// HTTPリクエスト相当の入出力を検証するテスト。テストごとに新しい
+// repository/service一式を作る（キャンプの所有者・参加者分離を検証する
+// テストが複数あり、状態を共有すると相互に影響するため）。
+function setupRoutes() {
+  const itemsRepository = createInMemoryItemsRepository();
+  const campsRepository = createInMemoryCampsRepository();
+  const campItemsRepository = createInMemoryCampItemsRepository();
+  const campMembersRepository = createInMemoryCampMembersRepository();
 
-  beforeEach(() => {
-    const itemsRepository = createInMemoryItemsRepository();
-    const campsRepository = createInMemoryCampsRepository();
-    const campItemsRepository = createInMemoryCampItemsRepository();
-
-    const itemsService = createItemsService(itemsRepository);
-    const campsService = createCampsService(campsRepository);
-    const campItemsService = createCampItemsService({
-      itemsRepository,
-      campsRepository,
-      campItemsRepository,
-    });
-
-    router = createRouter(
-      buildRoutes({ itemsService, campsService, campItemsService })
-    );
+  const itemsService = createItemsService(itemsRepository);
+  const campsService = createCampsService(campsRepository, campMembersRepository);
+  const campItemsService = createCampItemsService({
+    itemsRepository,
+    campsRepository,
+    campItemsRepository,
+    campMembersRepository,
+  });
+  const campMembersService = createCampMembersService({
+    campsRepository,
+    campMembersRepository,
   });
 
+  return buildRoutes({ itemsService, campsService, campItemsService, campMembersService });
+}
+
+describe("routes", () => {
   it("POST /items → GET /items で作成した持ち物マスタが一覧に含まれる", async () => {
+    const router = createRouter(setupRoutes());
     const created = await router.handleRequest({
       method: "POST",
       path: "/items",
@@ -52,20 +59,9 @@ describe("routes", () => {
   });
 
   it("POST /items でuser情報がある場合、createdBy/updatedByに記録される", async () => {
-    const itemsRepository = createInMemoryItemsRepository();
-    const campsRepository = createInMemoryCampsRepository();
-    const campItemsRepository = createInMemoryCampItemsRepository();
-    const itemsService = createItemsService(itemsRepository);
-    const campsService = createCampsService(campsRepository);
-    const campItemsService = createCampItemsService({
-      itemsRepository,
-      campsRepository,
-      campItemsRepository,
+    const authenticatedRouter = createRouter(setupRoutes(), {
+      authenticate: async () => ({ userId: "user-1" }),
     });
-    const authenticatedRouter = createRouter(
-      buildRoutes({ itemsService, campsService, campItemsService }),
-      { authenticate: async () => ({ userId: "user-1" }) }
-    );
 
     const created = await authenticatedRouter.handleRequest({
       method: "POST",
@@ -78,6 +74,7 @@ describe("routes", () => {
   });
 
   it("PUT /items/{itemId} で持ち物マスタを更新する", async () => {
+    const router = createRouter(setupRoutes());
     const created = await router.handleRequest({
       method: "POST",
       path: "/items",
@@ -93,6 +90,7 @@ describe("routes", () => {
   });
 
   it("DELETE /items/{itemId} で持ち物マスタを削除する", async () => {
+    const router = createRouter(setupRoutes());
     const created = await router.handleRequest({
       method: "POST",
       path: "/items",
@@ -107,6 +105,7 @@ describe("routes", () => {
   });
 
   it("キャンプ作成→持ち物選択→積み込みチェックの一連の流れ", async () => {
+    const router = createRouter(setupRoutes());
     const item = await router.handleRequest({
       method: "POST",
       path: "/items",
@@ -157,6 +156,7 @@ describe("routes", () => {
   });
 
   it("存在しないcampIdへのアクセスは404相当（NotFoundErrorのstatusCode）を返す", async () => {
+    const router = createRouter(setupRoutes());
     const result = await router.handleRequest({
       method: "GET",
       path: "/camps/missing/items",
@@ -166,19 +166,8 @@ describe("routes", () => {
   });
 
   it("キャンプは所有ユーザーごとに分離される", async () => {
-    const itemsRepository = createInMemoryItemsRepository();
-    const campsRepository = createInMemoryCampsRepository();
-    const campItemsRepository = createInMemoryCampItemsRepository();
-    const itemsService = createItemsService(itemsRepository);
-    const campsService = createCampsService(campsRepository);
-    const campItemsService = createCampItemsService({
-      itemsRepository,
-      campsRepository,
-      campItemsRepository,
-    });
-    const routes = buildRoutes({ itemsService, campsService, campItemsService });
     let currentUserId;
-    const authenticatedRouter = createRouter(routes, {
+    const authenticatedRouter = createRouter(setupRoutes(), {
       authenticate: async () => ({ userId: currentUserId }),
     });
 
@@ -227,18 +216,7 @@ describe("routes", () => {
   });
 
   it("POST /camps: 作成時に移動手段が対応する持ち物マスタ全件を今回使う状態にする", async () => {
-    const itemsRepository = createInMemoryItemsRepository();
-    const campsRepository = createInMemoryCampsRepository();
-    const campItemsRepository = createInMemoryCampItemsRepository();
-    const itemsService = createItemsService(itemsRepository);
-    const campsService = createCampsService(campsRepository);
-    const campItemsService = createCampItemsService({
-      itemsRepository,
-      campsRepository,
-      campItemsRepository,
-    });
-    const routes = buildRoutes({ itemsService, campsService, campItemsService });
-    const authenticatedRouter = createRouter(routes, {
+    const authenticatedRouter = createRouter(setupRoutes(), {
       authenticate: async () => ({ userId: "user-1" }),
     });
 
@@ -274,5 +252,123 @@ describe("routes", () => {
     expect(
       candidates.body.find((c) => c.itemId === bikeItem.body.itemId)
     ).toBeUndefined();
+  });
+
+  it("招待リンクで参加すると、参加者もキャンプ一覧・持ち物一覧にアクセスできるようになる", async () => {
+    let currentUser;
+    const authenticatedRouter = createRouter(setupRoutes(), {
+      authenticate: async () => currentUser,
+    });
+
+    currentUser = { userId: "user-1", name: "オーナー", email: "owner@example.com" };
+    const created = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps",
+      headers: {},
+      body: { name: "夏キャンプ", vehicleType: "car" },
+    });
+    const inviteToken = created.body.inviteToken;
+    expect(inviteToken).toBeTruthy();
+
+    currentUser = { userId: "user-2", name: "参加者", email: "member@example.com" };
+    const joined = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps/join",
+      headers: {},
+      body: { inviteToken },
+    });
+    expect(joined.statusCode).toBe(200);
+    expect(joined.body.campId).toBe(created.body.campId);
+
+    const listAsMember = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: "/camps",
+      headers: {},
+      body: {},
+    });
+    expect(listAsMember.body).toHaveLength(1);
+
+    const itemsAsMember = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: `/camps/${created.body.campId}/items`,
+      headers: {},
+      body: {},
+    });
+    expect(itemsAsMember.statusCode).toBe(200);
+
+    const membersList = await authenticatedRouter.handleRequest({
+      method: "GET",
+      path: `/camps/${created.body.campId}/members`,
+      headers: {},
+      body: {},
+    });
+    expect(membersList.body).toHaveLength(2);
+    expect(membersList.body.map((m) => m.role).sort()).toEqual(["member", "owner"]);
+  });
+
+  it("参加者はキャンプ設定の更新・削除・招待リンクの再発行はできない", async () => {
+    let currentUser;
+    const authenticatedRouter = createRouter(setupRoutes(), {
+      authenticate: async () => currentUser,
+    });
+
+    currentUser = { userId: "user-1", name: "オーナー" };
+    const created = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps",
+      headers: {},
+      body: { name: "夏キャンプ", vehicleType: "car" },
+    });
+    await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps/join",
+      headers: {},
+      body: { inviteToken: created.body.inviteToken },
+    });
+
+    currentUser = { userId: "user-2", name: "参加者" };
+    await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps/join",
+      headers: {},
+      body: { inviteToken: created.body.inviteToken },
+    });
+
+    const updateAsMember = await authenticatedRouter.handleRequest({
+      method: "PUT",
+      path: `/camps/${created.body.campId}`,
+      headers: {},
+      body: { name: "改変", vehicleType: "car" },
+    });
+    expect(updateAsMember.statusCode).toBe(403);
+
+    const deleteAsMember = await authenticatedRouter.handleRequest({
+      method: "DELETE",
+      path: `/camps/${created.body.campId}`,
+      headers: {},
+      body: {},
+    });
+    expect(deleteAsMember.statusCode).toBe(403);
+
+    const inviteAsMember = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: `/camps/${created.body.campId}/invite-token`,
+      headers: {},
+      body: {},
+    });
+    expect(inviteAsMember.statusCode).toBe(403);
+  });
+
+  it("存在しない招待トークンでの参加はNotFoundErrorを返す", async () => {
+    const authenticatedRouter = createRouter(setupRoutes(), {
+      authenticate: async () => ({ userId: "user-1" }),
+    });
+    const result = await authenticatedRouter.handleRequest({
+      method: "POST",
+      path: "/camps/join",
+      headers: {},
+      body: { inviteToken: "missing-token" },
+    });
+    expect(result.statusCode).toBe(404);
   });
 });

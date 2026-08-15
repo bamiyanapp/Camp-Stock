@@ -19,6 +19,7 @@ Globals:
         ITEMS_TABLE_NAME: !Ref ItemsTable
         CAMPS_TABLE_NAME: !Ref CampsTable
         CAMP_ITEMS_TABLE_NAME: !Ref CampItemsTable
+        CAMP_MEMBERS_TABLE_NAME: !Ref CampMembersTable
         GOOGLE_CLIENT_ID: !Ref GoogleClientId
 
 Resources:
@@ -84,6 +85,22 @@ Resources:
         - AttributeName: itemId
           KeyType: RANGE
 
+  CampMembersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: camp-stock-camp-members
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: campId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: campId
+          KeyType: HASH
+        - AttributeName: userId
+          KeyType: RANGE
+
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -97,6 +114,8 @@ Resources:
             TableName: !Ref CampsTable
         - DynamoDBCrudPolicy:
             TableName: !Ref CampItemsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CampMembersTable
       Events:
         ProxyApi:
           Type: HttpApi
@@ -180,6 +199,8 @@ Outputs:
     Value: !Ref CampsTable
   CampItemsTableName:
     Value: !Ref CampItemsTable
+  CampMembersTableName:
+    Value: !Ref CampMembersTable
   FrontendBucketName:
     Description: フロントエンドのビルド成果物をアップロードするS3バケット名
     Value: !Ref FrontendBucket

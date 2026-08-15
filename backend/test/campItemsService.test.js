@@ -4,12 +4,14 @@ import {
   createInMemoryItemsRepository,
   createInMemoryCampsRepository,
   createInMemoryCampItemsRepository,
+  createInMemoryCampMembersRepository,
 } from "./helpers/inMemoryRepositories.js";
 
 describe("campItemsService", () => {
   let itemsRepository;
   let campsRepository;
   let campItemsRepository;
+  let campMembersRepository;
   let service;
   let carCamp;
   let carItem;
@@ -47,11 +49,13 @@ describe("campItemsService", () => {
     campsRepository = createInMemoryCampsRepository([carCamp]);
 
     campItemsRepository = createInMemoryCampItemsRepository();
+    campMembersRepository = createInMemoryCampMembersRepository();
 
     service = createCampItemsService({
       itemsRepository,
       campsRepository,
       campItemsRepository,
+      campMembersRepository,
     });
   });
 
@@ -66,10 +70,16 @@ describe("campItemsService", () => {
     await expect(service.listForCamp("missing", "user-1")).rejects.toThrow(/not found/);
   });
 
-  it("listForCamp: 他ユーザーが所有するキャンプはForbiddenErrorを投げる", async () => {
+  it("listForCamp: 招待されていない他ユーザーはForbiddenErrorを投げる", async () => {
     await expect(service.listForCamp("camp-1", "user-2")).rejects.toMatchObject({
       statusCode: 403,
     });
+  });
+
+  it("listForCamp: 参加者（CampMembers）であれば候補一覧を取得できる", async () => {
+    await campMembersRepository.put({ campId: "camp-1", userId: "user-2", joinedAt: "2026-01-02T00:00:00.000Z" });
+    const result = await service.listForCamp("camp-1", "user-2");
+    expect(result.length).toBeGreaterThan(0);
   });
 
   it("setUsed(true): 持ち物を今回使うものとして選択する", async () => {
@@ -93,10 +103,16 @@ describe("campItemsService", () => {
     ).rejects.toThrow(/not found/);
   });
 
-  it("setUsed: 他ユーザーが所有するキャンプはForbiddenErrorを投げる", async () => {
+  it("setUsed: 招待されていない他ユーザーはForbiddenErrorを投げる", async () => {
     await expect(
       service.setUsed("camp-1", "item-car", true, "user-2")
     ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("setUsed: 参加者（CampMembers）であれば今回使う選択を操作できる", async () => {
+    await campMembersRepository.put({ campId: "camp-1", userId: "user-2", joinedAt: "2026-01-02T00:00:00.000Z" });
+    const result = await service.setUsed("camp-1", "item-car", true, "user-2");
+    expect(result.used).toBe(true);
   });
 
   it("setPacked: 使用中の持ち物の積み込み状態を更新する", async () => {
@@ -115,11 +131,18 @@ describe("campItemsService", () => {
     ).rejects.toThrow(/not marked as used/);
   });
 
-  it("setPacked: 他ユーザーが所有するキャンプはForbiddenErrorを投げる", async () => {
+  it("setPacked: 招待されていない他ユーザーはForbiddenErrorを投げる", async () => {
     await service.setUsed("camp-1", "item-car", true, "user-1");
     await expect(
       service.setPacked("camp-1", "item-car", true, "user-2")
     ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("setPacked: 参加者（CampMembers）であれば積み込み状態を操作できる", async () => {
+    await service.setUsed("camp-1", "item-car", true, "user-1");
+    await campMembersRepository.put({ campId: "camp-1", userId: "user-2", joinedAt: "2026-01-02T00:00:00.000Z" });
+    const result = await service.setPacked("camp-1", "item-car", true, "user-2");
+    expect(result.packed).toBe(true);
   });
 
   it("seedAllMatchingItems: キャンプの移動手段に対応する持ち物マスタ全件をused: trueにする", async () => {

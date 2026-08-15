@@ -31,7 +31,8 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 ## データモデル
 
 - **持ち物マスタ（Items）**: `itemId` / `name` / `emoji`（一覧表示用の絵文字アイコン、任意） / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID） — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ
-- **キャンプ（Camps）**: `campId` / `name` / `date` / `vehicleType`（`car` | `bike`）/ `ownerUserId`（作成者のGoogleアカウントID） — 個々のキャンプ。移動手段を1つ選ぶ。作成したユーザー本人のみが参照・編集・削除できる（他ユーザーのキャンプへのアクセスは403）
+- **キャンプ（Camps）**: `campId` / `name` / `date` / `vehicleType`（`car` | `bike`）/ `ownerUserId`（作成者のGoogleアカウントID） / `ownerName` / `ownerEmail` / `ownerPicture`（作成者の表示用プロフィール） / `inviteToken`（招待リンクのトークン） — 個々のキャンプ。移動手段を1つ選ぶ。参照・持ち物の操作は所有者・参加者（後述のCampMembers）双方に許可し、キャンプ設定の編集・削除・招待リンクの再発行は所有者のみ許可する（それ以外は403）
+- **キャンプの参加者（CampMembers）**: `campId` + `userId` をキーに、招待リンク経由でキャンプに参加したユーザー（所有者以外）を保持する。`name` / `email` / `picture`は参加時点のGoogleアカウントのプロフィールを保持する（別途Usersテーブルは持たない設計のため、その後の変更は反映されない）
 - **キャンプごとの持ち物状態（CampItems）**: `campId` + `itemId` をキーに、そのキャンプで「今回使う」と選択された持ち物の積み込み状態（`packed`）を保持する。レコードが存在すること自体が「使用中」を表す
 
 ## API
@@ -44,12 +45,15 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 | DELETE | `/items/{itemId}` | 持ち物マスタ削除 |
 | GET | `/camps` | キャンプ一覧 |
 | POST | `/camps` | キャンプ作成。移動手段が対応する持ち物マスタ全件を自動的に「今回使う」状態にする |
-| GET | `/camps/{campId}` | キャンプ取得 |
-| PUT | `/camps/{campId}` | キャンプ更新 |
-| DELETE | `/camps/{campId}` | キャンプ削除 |
-| GET | `/camps/{campId}/items` | キャンプの移動手段に対応する持ち物候補と、使用/積み込み状態のマージ結果 |
-| PUT | `/camps/{campId}/items/{itemId}` | `{ used }` または `{ packed }` を指定して状態を更新 |
-| DELETE | `/camps/{campId}/items/{itemId}` | 「今回使う」から除外（積み込み状態もリセット） |
+| GET | `/camps/{campId}` | キャンプ取得（所有者・参加者のみ、それ以外は403） |
+| PUT | `/camps/{campId}` | キャンプ更新（所有者のみ） |
+| DELETE | `/camps/{campId}` | キャンプ削除（所有者のみ） |
+| GET | `/camps/{campId}/members` | 参加者一覧取得（所有者+CampMembers、所有者・参加者のみ） |
+| POST | `/camps/{campId}/invite-token` | 招待リンクのトークンを再発行する（所有者のみ）。古いリンクは無効になる |
+| POST | `/camps/join` | `{ inviteToken }`を指定して、リクエストしたユーザーをそのキャンプの参加者として登録する |
+| GET | `/camps/{campId}/items` | キャンプの移動手段に対応する持ち物候補と、使用/積み込み状態のマージ結果（所有者・参加者のみ） |
+| PUT | `/camps/{campId}/items/{itemId}` | `{ used }` または `{ packed }` を指定して状態を更新（所有者・参加者のみ） |
+| DELETE | `/camps/{campId}/items/{itemId}` | 「今回使う」から除外（積み込み状態もリセット、所有者・参加者のみ） |
 
 ## ローカル開発
 

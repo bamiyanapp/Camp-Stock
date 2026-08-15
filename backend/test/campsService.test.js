@@ -1,14 +1,19 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createCampsService } from "../src/services/campsService.js";
-import { createInMemoryCampsRepository } from "./helpers/inMemoryRepositories.js";
+import {
+  createInMemoryCampsRepository,
+  createInMemoryCampMembersRepository,
+} from "./helpers/inMemoryRepositories.js";
 
 describe("campsService", () => {
   let repository;
+  let campMembersRepository;
   let service;
 
   beforeEach(() => {
     repository = createInMemoryCampsRepository();
-    service = createCampsService(repository);
+    campMembersRepository = createInMemoryCampMembersRepository();
+    service = createCampsService(repository, campMembersRepository);
   });
 
   it("create: キャンプを作成する", async () => {
@@ -88,5 +93,66 @@ describe("campsService", () => {
     await expect(service.remove(created.campId, "user-2")).rejects.toMatchObject({
       statusCode: 403,
     });
+  });
+
+  it("create: inviteTokenを自動発行する", async () => {
+    const camp = await service.create({ name: "夏キャンプ", vehicleType: "car" }, "user-1");
+    expect(camp.inviteToken).toBeTruthy();
+  });
+
+  it("create: ownerProfile（name/email/picture）を記録する", async () => {
+    const camp = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1",
+      { name: "オーナー", email: "owner@example.com", picture: "https://example.com/a.png" }
+    );
+    expect(camp.ownerName).toBe("オーナー");
+    expect(camp.ownerEmail).toBe("owner@example.com");
+    expect(camp.ownerPicture).toBe("https://example.com/a.png");
+  });
+
+  it("get: 参加者（CampMembers）であれば取得できる", async () => {
+    const created = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    await campMembersRepository.put({
+      campId: created.campId,
+      userId: "user-2",
+      joinedAt: "2026-01-02T00:00:00.000Z",
+    });
+    const camp = await service.get(created.campId, "user-2");
+    expect(camp.campId).toBe(created.campId);
+  });
+
+  it("list: 参加者（CampMembers）として参加済みのキャンプも一覧に含まれる", async () => {
+    const created = await service.create(
+      { name: "user1のキャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    await campMembersRepository.put({
+      campId: created.campId,
+      userId: "user-2",
+      joinedAt: "2026-01-02T00:00:00.000Z",
+    });
+
+    const list = await service.list("user-2");
+    expect(list).toHaveLength(1);
+    expect(list[0].campId).toBe(created.campId);
+  });
+
+  it("update: 参加者は編集できない（所有者のみ許可）", async () => {
+    const created = await service.create(
+      { name: "夏キャンプ", vehicleType: "car" },
+      "user-1"
+    );
+    await campMembersRepository.put({
+      campId: created.campId,
+      userId: "user-2",
+      joinedAt: "2026-01-02T00:00:00.000Z",
+    });
+    await expect(
+      service.update(created.campId, { name: "改変", vehicleType: "car" }, "user-2")
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 });
