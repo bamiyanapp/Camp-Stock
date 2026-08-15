@@ -12,5 +12,9 @@ jobs:
       frontend_dir: frontend
       backend_dir: backend
       node_version: "22"
+      # shared/pwa/等、sync-manifest.local.json経由でdev-standards submodule配下の
+      # 実ファイルをsymlink共有しているため、bootstrap.js --checkによる
+      # symlink欠落・リンク切れの自動検知を有効にする
+      enable_standards_check: true
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
