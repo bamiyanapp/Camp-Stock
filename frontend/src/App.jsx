@@ -9,6 +9,8 @@ import CampDetailPage from "./pages/CampDetailPage.jsx";
 import CampItemSelectionPage from "./pages/CampItemSelectionPage.jsx";
 import CampJoinPage from "./pages/CampJoinPage.jsx";
 import ItemsPage from "./pages/ItemsPage.jsx";
+import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration.jsx";
+import UpdateNotifier from "./components/UpdateNotifier.jsx";
 
 function Navigation() {
   const linkClass = ({ isActive }) => `tab ${isActive ? "tab-active" : ""}`;
@@ -134,6 +136,8 @@ function App() {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <BrowserRouter>
+          <ServiceWorkerRegistration />
+          <UpdateNotifier />
           <main className="mx-auto max-w-2xl px-4 py-10">
             <AppHeader />
             <AppContent />

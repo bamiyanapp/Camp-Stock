@@ -28,6 +28,16 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 
 `frontend/public/manifest.json`と`index.html`の`apple-mobile-web-app-*` meta タグにより、iOS Safariでホーム画面に追加した際に正式なPWA（スタンドアロン表示）として認識されるようにしている。iOS Safariには、JavaScriptから操作するストレージ（Cookie/localStorage）を一定期間サイトへの直接アクセスがないと予告なく消去するIntelligent Tracking Prevention（ITP）があり、正式なPWAとして認識されることでこの影響が緩和される可能性がある（効果はApple側の非公開の内部動作に依存し保証はできない）。
 
+### ホーム画面追加時の更新
+
+スマートフォンのホーム画面に追加した状態（PWA/スタンドアロン表示）でも最新版に追従できるよう、`dev-standards`の`shared/pwa/`パターン（詳細は`dev-standards/docs/service-worker-update-pattern.md`）を導入している。
+
+- `sync-manifest.local.json`（リポジトリルート）で`shared/pwa/sw.js`・`ServiceWorkerRegistration.jsx`・`UpdateNotifier.jsx`をsymlinkとして取り込む（`node dev-standards/scripts/bootstrap.js`で同期）
+- `frontend/public/sw-config.js`（実ファイル、Camp Stock固有）でキャッシュバージョン・先読みURL・APIキャッシュ対象ホストを設定する
+- ページ本体（HTMLナビゲーション）はNetwork First、それ以外の同一オリジンサブリソースはStale-While-Revalidateで扱うため、デプロイ後は常に最新のHTML・アセットを取得できる
+- アプリのフォアグラウンド復帰時・5分おきに更新チェックを行い、新バージョンを検知すると再読み込みを促すバナーを表示する（`UpdateNotifier`）
+- `sw.js`本体のキャッシュ戦略を変更した場合は、`frontend/public/sw-config.js`の`cacheVersion`を必ず更新すること（旧キャッシュを確実に破棄させるため）
+
 ## データモデル
 
 - **持ち物マスタ（Items）**: `itemId` / `name` / `emoji`（一覧表示用の絵文字アイコン、任意） / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID） — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ
