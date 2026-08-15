@@ -23,10 +23,14 @@ jobs:
       AWS_REGION: ap-northeast-1
       STACK_NAME: camp-stock
     steps:
+      # frontend/src/components/ServiceWorkerRegistration.jsx・UpdateNotifier.jsxは
+      # dev-standards/shared/pwa/実体へのsymlinkのため、submoduleを取得しないと
+      # リンク切れになりnpm run buildが失敗する（issue #114）。
       - name: Checkout
         uses: actions/checkout@v7
         with:
           ref: main
+          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
