@@ -38,6 +38,12 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 - アプリのフォアグラウンド復帰時・5分おきに更新チェックを行い、新バージョンを検知すると再読み込みを促すバナーを表示する（`UpdateNotifier`）
 - `sw.js`本体のキャッシュ戦略を変更した場合は、`frontend/public/sw-config.js`の`cacheVersion`を必ず更新すること（旧キャッシュを確実に破棄させるため）
 
+## 共有UIコンポーネント
+
+`dev-standards`の`shared/ui/`（詳細は`dev-standards/docs/shared-ui-components.md`）から、`sync-manifest.local.json`経由でsymlink導入している。
+
+- `ShareButton`（`frontend/src/components/ShareButton.jsx`）: キャンプ詳細画面の招待リンクをQRコードで表示・URLをワンタップコピーできるボタン。スマートフォンオンリーの利用環境で、招待リンクをその場で見せてQRコードを読み取ってもらう共有導線として使う。`qrcode.react`に依存するため、`frontend/vite.config.js`の`resolve.preserveSymlinks: true`が前提
+
 ## データモデル
 
 - **持ち物マスタ（Items）**: `itemId` / `name` / `emoji`（一覧表示用の絵文字アイコン、任意） / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID） — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ

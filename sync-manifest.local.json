@@ -2,6 +2,7 @@
   "symlinks": [
     { "source": "shared/pwa/sw.js", "target": "frontend/public/sw.js" },
     { "source": "shared/pwa/ServiceWorkerRegistration.jsx", "target": "frontend/src/components/ServiceWorkerRegistration.jsx" },
-    { "source": "shared/pwa/UpdateNotifier.jsx", "target": "frontend/src/components/UpdateNotifier.jsx" }
+    { "source": "shared/pwa/UpdateNotifier.jsx", "target": "frontend/src/components/UpdateNotifier.jsx" },
+    { "source": "shared/ui/ShareButton.jsx", "target": "frontend/src/components/ShareButton.jsx" }
   ]
 }

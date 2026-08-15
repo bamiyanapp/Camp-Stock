@@ -324,6 +324,17 @@ describe("CampDetailPage", () => {
         expect(screen.getByLabelText("招待リンク").value).toContain("/join/invite-token-2");
       });
     });
+
+    it("「QRコードで共有」ボタンで招待リンクのQRコードを表示する", async () => {
+      const user = userEvent.setup();
+      setSessionCookie({ sub: "owner-sub", name: "オーナー" });
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      await user.click(screen.getByRole("button", { name: "QRコードで共有" }));
+
+      expect(screen.getByText((text) => text.includes("/join/invite-token-1"))).toBeInTheDocument();
+    });
   });
 
   describe("担当者表示", () => {
