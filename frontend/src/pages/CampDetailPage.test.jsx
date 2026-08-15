@@ -325,4 +325,48 @@ describe("CampDetailPage", () => {
       });
     });
   });
+
+  describe("担当者表示", () => {
+    it("担当者が割り当てられている持ち物は担当者名をバッジで表示する", async () => {
+      api.listCampMembers.mockResolvedValue([
+        { userId: "owner-sub", role: "owner", name: "オーナー", email: null },
+        { userId: "member-sub", role: "member", name: "参加者", email: null },
+      ]);
+      api.listCampItems.mockResolvedValue([
+        {
+          itemId: "item-2",
+          name: "さいふ",
+          category: "携帯品",
+          vehicleType: "both",
+          used: true,
+          packed: false,
+          assignedUserId: "member-sub",
+        },
+      ]);
+      renderPage();
+      await screen.findByText("さいふ");
+
+      const walletRow = screen.getByText("さいふ").closest("li");
+      expect(walletRow).toHaveTextContent("参加者");
+    });
+
+    it("担当者が未割り当ての持ち物にはバッジを表示しない", async () => {
+      api.listCampItems.mockResolvedValue([
+        {
+          itemId: "item-2",
+          name: "さいふ",
+          category: "携帯品",
+          vehicleType: "both",
+          used: true,
+          packed: false,
+          assignedUserId: null,
+        },
+      ]);
+      renderPage();
+      await screen.findByText("さいふ");
+
+      const walletRow = screen.getByText("さいふ").closest("li");
+      expect(walletRow.querySelector(".badge")).not.toBeInTheDocument();
+    });
+  });
 });

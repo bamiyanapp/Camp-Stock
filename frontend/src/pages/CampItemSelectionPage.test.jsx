@@ -9,7 +9,9 @@ vi.mock("../api/client.js", () => ({
   api: {
     getCamp: vi.fn(),
     listCampItems: vi.fn(),
+    listCampMembers: vi.fn(),
     setCampItemUsed: vi.fn(),
+    setCampItemAssignee: vi.fn(),
   },
 }));
 
@@ -39,6 +41,7 @@ describe("CampItemSelectionPage", () => {
         vehicleType: "car",
         used: true,
         packed: false,
+        assignedUserId: null,
       },
       {
         itemId: "item-2",
@@ -47,7 +50,12 @@ describe("CampItemSelectionPage", () => {
         vehicleType: "both",
         used: false,
         packed: false,
+        assignedUserId: null,
       },
+    ]);
+    api.listCampMembers.mockResolvedValue([
+      { userId: "user-1", name: "オーナー", role: "owner" },
+      { userId: "user-2", name: "参加者", role: "member" },
     ]);
   });
 
@@ -134,5 +142,50 @@ describe("CampItemSelectionPage", () => {
       "href",
       "/camps/camp-1"
     );
+  });
+
+  describe("担当者", () => {
+    it("今回使う持ち物にのみ担当者の選択欄を表示する", async () => {
+      renderPage();
+      await screen.findByText("テント");
+      expect(screen.getByLabelText("テントの担当者")).toBeInTheDocument();
+      expect(screen.queryByLabelText("さいふの担当者")).not.toBeInTheDocument();
+    });
+
+    it("担当者の選択肢に参加者一覧を表示する", async () => {
+      renderPage();
+      await screen.findByText("テント");
+      const select = screen.getByLabelText("テントの担当者");
+      expect(select).toHaveTextContent("未割り当て");
+      expect(select).toHaveTextContent("オーナー");
+      expect(select).toHaveTextContent("参加者");
+    });
+
+    it("担当者を選択するとsetCampItemAssigneeを呼ぶ", async () => {
+      const user = userEvent.setup();
+      api.setCampItemAssignee.mockResolvedValue({});
+      renderPage();
+      await screen.findByText("テント");
+
+      await user.selectOptions(screen.getByLabelText("テントの担当者"), "user-2");
+
+      await waitFor(() => {
+        expect(api.setCampItemAssignee).toHaveBeenCalledWith("camp-1", "item-1", "user-2");
+      });
+    });
+
+    it("担当者の更新に失敗した場合、選択を元に戻す", async () => {
+      const user = userEvent.setup();
+      api.setCampItemAssignee.mockRejectedValue(new Error("更新に失敗しました"));
+      renderPage();
+      await screen.findByText("テント");
+
+      await user.selectOptions(screen.getByLabelText("テントの担当者"), "user-2");
+
+      await waitFor(() => {
+        expect(screen.getByText("更新に失敗しました")).toBeInTheDocument();
+      });
+      expect(screen.getByLabelText("テントの担当者")).toHaveValue("");
+    });
   });
 });

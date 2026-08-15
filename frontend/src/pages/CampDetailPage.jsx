@@ -86,6 +86,14 @@ export default function CampDetailPage() {
   const isOwner = Boolean(user) && camp.ownerUserId === user.sub;
   const inviteUrl = camp.inviteToken ? `${window.location.origin}/join/${camp.inviteToken}` : "";
 
+  function assigneeLabel(item) {
+    if (!item.assignedUserId) {
+      return null;
+    }
+    const member = members.find((m) => m.userId === item.assignedUserId);
+    return member ? member.name || member.email || member.userId : item.assignedUserId;
+  }
+
   return (
     <div>
       {error && <p className="mb-4 text-error">{error}</p>}
@@ -180,9 +188,12 @@ export default function CampDetailPage() {
                         key={item.itemId}
                         className="flex items-center justify-between gap-3 rounded bg-base-200 p-2"
                       >
-                        <span>
+                        <span className="flex items-center gap-2">
                           {item.emoji && <span className="mr-1">{item.emoji}</span>}
                           {item.name}
+                          {assigneeLabel(item) && (
+                            <span className="badge badge-ghost badge-sm">{assigneeLabel(item)}</span>
+                          )}
                         </span>
                         <input
                           type="checkbox"

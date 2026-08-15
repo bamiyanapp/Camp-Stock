@@ -65,4 +65,9 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ packed }),
     }),
+  setCampItemAssignee: (campId, itemId, assignedUserId) =>
+    request(`/camps/${campId}/items/${itemId}`, {
+      method: "PUT",
+      body: JSON.stringify({ assignedUserId }),
+    }),
 };
