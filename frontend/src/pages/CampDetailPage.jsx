@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "../api/client.js";
 import { useAuth } from "../auth/useAuth.js";
+import BackLink from "../components/BackLink.jsx";
 
 const VEHICLE_LABELS = { car: "車", bike: "バイク" };
 const PACKED_FILTER_LABELS = { unpacked: "未済", packed: "積み込み済み" };
@@ -97,9 +98,7 @@ export default function CampDetailPage() {
   return (
     <div>
       {error && <p className="mb-4 text-error">{error}</p>}
-      <Link to="/" className="link mb-4 inline-block">
-        ← キャンプ一覧へ戻る
-      </Link>
+      <BackLink to="/">← キャンプ一覧へ戻る</BackLink>
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-xl font-bold">
           {camp.name}（{VEHICLE_LABELS[camp.vehicleType]}）
