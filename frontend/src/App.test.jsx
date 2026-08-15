@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
 import App from "./App.jsx";
 
 const STORAGE_KEY = "camp-stock-id-token";
@@ -24,6 +24,16 @@ function clearSessionCookie() {
   document.cookie = `${STORAGE_KEY}=; Path=/; Max-Age=0`;
 }
 
+// ServiceWorkerRegistration/UpdateNotifierはnavigator.serviceWorkerを参照するが、
+// jsdomには標準で存在しないため、テストごとにモックを差し込む。
+function mockServiceWorker({ controller = null } = {}) {
+  const container = new EventTarget();
+  container.controller = controller;
+  container.register = vi.fn().mockResolvedValue({ update: vi.fn().mockResolvedValue(undefined) });
+  Object.defineProperty(navigator, "serviceWorker", { value: container, configurable: true });
+  return container;
+}
+
 describe("App", () => {
   beforeEach(() => {
     clearSessionCookie();
@@ -32,6 +42,14 @@ describe("App", () => {
       status: 200,
       json: async () => [],
     });
+  });
+
+  afterEach(() => {
+    // navigator.serviceWorkerのモックを削除する前に、Service Worker関連の
+    // effectクリーンアップ（removeEventListener等）を先に走らせておく必要がある
+    // ため、setupTests.jsのグローバルなafterEach(cleanup)を待たず明示的に呼ぶ。
+    cleanup();
+    delete navigator.serviceWorker;
   });
 
   it("renders without crashing", () => {
@@ -136,6 +154,39 @@ describe("App", () => {
 
     expect(document.cookie.includes(`${STORAGE_KEY}=`)).toBe(false);
     expect(screen.getByText("Camp Stockを利用するにはGoogleアカウントでログインしてください")).toBeInTheDocument();
+  });
+
+  it("Service Workerが利用可能な場合、/sw.jsを登録する", () => {
+    const container = mockServiceWorker();
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    expect(container.register).toHaveBeenCalledWith("/sw.js");
+  });
+
+  it("既存のService Worker制御下でcontrollerchangeが発火すると更新通知を表示する", () => {
+    const container = mockServiceWorker({ controller: {} });
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    act(() => {
+      container.dispatchEvent(new Event("controllerchange"));
+    });
+
+    expect(screen.getByText("新しいバージョンがあります")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "更新する" })).toBeInTheDocument();
+  });
+
+  it("初回インストール（読み込み時にcontrollerが無い）の場合はcontrollerchangeが発火しても更新通知を表示しない", () => {
+    const container = mockServiceWorker({ controller: null });
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    act(() => {
+      container.dispatchEvent(new Event("controllerchange"));
+    });
+
+    expect(screen.queryByText("新しいバージョンがあります")).not.toBeInTheDocument();
   });
 
   it("現在のアプリバージョンを表示する", () => {
