@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "../api/client.js";
 import { useAuth } from "../auth/useAuth.js";
+import ShareButton from "../components/ShareButton.jsx";
 
 const VEHICLE_LABELS = { car: "車", bike: "バイク" };
 const PACKED_FILTER_LABELS = { unpacked: "未済", packed: "積み込み済み" };
@@ -139,6 +140,13 @@ export default function CampDetailPage() {
             <button type="button" className="btn btn-sm btn-ghost" onClick={handleRegenerateInvite}>
               再発行
             </button>
+          </div>
+          <div className="mt-2">
+            <ShareButton
+              label="QRコードで共有"
+              className="btn btn-sm btn-outline"
+              getUrl={() => inviteUrl}
+            />
           </div>
           <p className="mt-1 text-xs opacity-60">
             このリンクを開いたユーザーは誰でもこのキャンプに参加できます。再発行すると古いリンクは無効になります。
