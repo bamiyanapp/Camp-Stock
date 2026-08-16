@@ -3,9 +3,12 @@
   themes: light --default, dark --prefersdark;
 }
 
-/* 全プロダクト共通のフォント規約（dev-standards/docs/frontend-ui-conventions.md） */
-@theme {
-  --font-sans:
-    "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji";
-}
+/* 全プロダクト共通のUIテーマ（dev-standards/docs/shared-ui-components.md、
+   共通フォント・フェードイン/アウト・ボタン押下フィードバック）。
+   dev-standards submodule配下の実体へのsymlink（common-theme.css）経由で
+   取り込むため、dev-standards側の変更が自動反映される。
+   （フォントを:root, #rootのfont-familyとして指定するため、Tailwindの
+   font-sansユーティリティクラス自体は使っていない現状では、これだけで
+   全体に適用される。font-sansユーティリティを使う場合は別途@theme側の
+   --font-sansも合わせる必要がある） */
+@import "./common-theme.css";
