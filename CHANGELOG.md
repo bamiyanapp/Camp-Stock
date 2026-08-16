@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.24.0...v1.25.0) (2026-08-16)
+
+
+### Features
+
+* **frontend:** 共通CSS（フォント・フェード・ボタンフィードバック）をdev-standardsの共有ファイル経由へ切り替える ([#133](https://github.com/bamiyanapp/Camp-Stock/issues/133)) ([f6c73ce](https://github.com/bamiyanapp/Camp-Stock/commit/f6c73cea2c8f9e4f5aec991d4d8dafb28cd845bf)), closes [#132](https://github.com/bamiyanapp/Camp-Stock/issues/132)
+
 # [1.24.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.23.0...v1.24.0) (2026-08-16)
 
 
