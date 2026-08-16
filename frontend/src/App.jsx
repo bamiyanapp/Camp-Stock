@@ -99,11 +99,14 @@ function AppHeader() {
   const { idToken, user, logout } = useAuth();
   return (
     <div className="mb-6 flex items-start justify-between">
-      <div>
-        <h1 className="mb-1 text-2xl font-bold">
-          Camp Stock <span className="text-sm font-normal opacity-60">v{__APP_VERSION__}</span>
-        </h1>
-        <p className="text-xs opacity-50">更新日時: {buildTimeLabel}</p>
+      <div className="flex items-start gap-2">
+        <img src="/icon-192.png" alt="" className="mt-0.5 h-8 w-8" />
+        <div>
+          <h1 className="mb-1 text-2xl font-bold">
+            Camp Stock <span className="text-sm font-normal opacity-60">v{__APP_VERSION__}</span>
+          </h1>
+          <p className="text-xs opacity-50">更新日時: {buildTimeLabel}</p>
+        </div>
       </div>
       {idToken && user && <AccountMenu user={user} onLogout={() => logout()} />}
     </div>
