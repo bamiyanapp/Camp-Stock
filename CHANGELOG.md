@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.23.0...v1.24.0) (2026-08-16)
+
+
+### Features
+
+* **frontend:** 共通フォント（M PLUS Rounded 1c）を適用する ([#130](https://github.com/bamiyanapp/Camp-Stock/issues/130)) ([43586ef](https://github.com/bamiyanapp/Camp-Stock/commit/43586eff36d6d2fc16aea11ebe78edb7441a94fe)), closes [#129](https://github.com/bamiyanapp/Camp-Stock/issues/129)
+
 # [1.23.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.22.1...v1.23.0) (2026-08-15)
 
 
