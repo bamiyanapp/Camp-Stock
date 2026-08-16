@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.25.0...v1.26.0) (2026-08-16)
+
+
+### Features
+
+* **frontend:** キャンプファイヤー画像をファビコン・ヘッダーに設定する ([#140](https://github.com/bamiyanapp/Camp-Stock/issues/140)) ([26b5b7c](https://github.com/bamiyanapp/Camp-Stock/commit/26b5b7c0f7b1c398563f37d3dfc57ea3a130d588)), closes [#139](https://github.com/bamiyanapp/Camp-Stock/issues/139)
+
 # [1.25.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.24.0...v1.25.0) (2026-08-16)
 
 
