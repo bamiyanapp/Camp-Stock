@@ -1,3 +1,10 @@
+## [1.27.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.27.0...v1.27.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* **backend,frontend:** 招待リンクの初回空欄を解消し表示を折り畳みにする ([#146](https://github.com/bamiyanapp/Camp-Stock/issues/146)) ([06b32f0](https://github.com/bamiyanapp/Camp-Stock/commit/06b32f01f3bdbcc9d0a65897e9c82e5a563afd16)), closes [#145](https://github.com/bamiyanapp/Camp-Stock/issues/145)
+
 # [1.27.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.26.0...v1.27.0) (2026-08-17)
 
 
