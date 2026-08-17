@@ -287,6 +287,15 @@ describe("CampDetailPage", () => {
       expect(inviteInput.value).toContain("/join/invite-token-1");
     });
 
+    it("招待リンク欄は既定で折り畳まれている", async () => {
+      setSessionCookie({ sub: "owner-sub", name: "オーナー" });
+      renderPage();
+      await screen.findByText("夏キャンプ（車）");
+
+      const details = screen.getByText("招待リンク").closest("details");
+      expect(details).not.toHaveAttribute("open");
+    });
+
     it("所有者以外としてログインしている場合、招待リンクは表示されない", async () => {
       setSessionCookie({ sub: "member-sub", name: "参加者" });
       renderPage();

@@ -32,6 +32,25 @@ describe("campsService", () => {
     await expect(service.get("missing")).rejects.toThrow(/not found/);
   });
 
+  it("get: inviteTokenが無い既存キャンプ（招待機能実装前に作成）は自動的に発行・永続化する", async () => {
+    // 招待機能実装前に作成されたキャンプを模倣し、inviteTokenを持たない状態でrepositoryへ直接put
+    await repository.put({
+      campId: "legacy-camp",
+      name: "招待機能実装前のキャンプ",
+      vehicleType: "car",
+      ownerUserId: "user-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+
+    const camp = await service.get("legacy-camp", "user-1");
+    expect(camp.inviteToken).toBeTruthy();
+
+    // 発行したトークンがrepositoryへ永続化されており、再取得しても同じ値であること
+    const reFetched = await service.get("legacy-camp", "user-1");
+    expect(reFetched.inviteToken).toBe(camp.inviteToken);
+  });
+
   it("update: キャンプを更新する", async () => {
     const created = await service.create({ name: "夏キャンプ", vehicleType: "car" });
     const updated = await service.update(created.campId, {

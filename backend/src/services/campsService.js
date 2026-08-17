@@ -39,6 +39,17 @@ export function createCampsService(campsRepository, campMembersRepository) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
       await assertCampMember(camp, userId, campMembersRepository);
+      // 招待リンク機能（#92）の実装前に作成されたキャンプはinviteTokenを
+      // 持たない（DynamoDBはスキーマレスのため、後から追加したフィールドは
+      // 既存レコードに遡って付与されない）。取得時に検知し、その場で
+      // 発行・永続化する（issue #145）。
+      if (!camp.inviteToken) {
+        return campsRepository.put({
+          ...camp,
+          inviteToken: randomUUID(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
       return camp;
     },
 
