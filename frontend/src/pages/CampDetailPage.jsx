@@ -125,32 +125,38 @@ export default function CampDetailPage() {
       )}
 
       {isOwner && (
-        <div className="mb-6 rounded bg-base-200 p-3">
-          <p className="mb-2 text-sm font-semibold">招待リンク</p>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              readOnly
-              className="input input-bordered input-sm flex-1"
-              value={inviteUrl}
-              aria-label="招待リンク"
-              onFocus={(e) => e.target.select()}
-            />
-            <button type="button" className="btn btn-sm btn-ghost" onClick={handleRegenerateInvite}>
-              再発行
-            </button>
+        <details className="collapse collapse-arrow mb-6 bg-base-200">
+          <summary className="collapse-title text-sm font-semibold">招待リンク</summary>
+          <div className="collapse-content">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                className="input input-bordered input-sm flex-1"
+                value={inviteUrl}
+                aria-label="招待リンク"
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={handleRegenerateInvite}
+              >
+                再発行
+              </button>
+            </div>
+            <div className="mt-2">
+              <ShareButton
+                label="QRコードで共有"
+                className="btn btn-sm btn-outline"
+                getUrl={() => inviteUrl}
+              />
+            </div>
+            <p className="mt-1 text-xs opacity-60">
+              このリンクを開いたユーザーは誰でもこのキャンプに参加できます。再発行すると古いリンクは無効になります。
+            </p>
           </div>
-          <div className="mt-2">
-            <ShareButton
-              label="QRコードで共有"
-              className="btn btn-sm btn-outline"
-              getUrl={() => inviteUrl}
-            />
-          </div>
-          <p className="mt-1 text-xs opacity-60">
-            このリンクを開いたユーザーは誰でもこのキャンプに参加できます。再発行すると古いリンクは無効になります。
-          </p>
-        </div>
+        </details>
       )}
 
       {usedItems.length === 0 ? (
