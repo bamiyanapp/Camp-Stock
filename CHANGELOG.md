@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.26.0...v1.27.0) (2026-08-17)
+
+
+### Features
+
+* **frontend:** PWAアイコンにmaskable版を追加する ([#143](https://github.com/bamiyanapp/Camp-Stock/issues/143)) ([cb516ae](https://github.com/bamiyanapp/Camp-Stock/commit/cb516aea677702aa5e45ddfb1188fd71b405ed29)), closes [#142](https://github.com/bamiyanapp/Camp-Stock/issues/142)
+
 # [1.26.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.25.0...v1.26.0) (2026-08-16)
 
 
