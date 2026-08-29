@@ -21,11 +21,12 @@ const E2E_SEED_ITEMS = [
   { itemId: "e2e-wallet", name: "さいふ", emoji: "👛", category: "携帯品", vehicleType: "both" },
 ];
 
-// 実際のGoogle検証（署名・audience）は行わず、Authorization: Bearer <トークン>の
-// ペイロードをそのまま信頼するfake authenticator。トークンはJWTと同じ形式
-// （header.payload.signature、いずれもbase64url）で、frontend側は本物のIDトークンと
-// 同様にjwt-decodeでpayloadを表示に使える（frontend/e2e/auth.jsが同じ形式で発行する）。
-// backend/src/lib/googleAuth.jsのcreateGoogleAuthenticatorと同じ
+// 実際のセッショントークン検証（署名・有効期限）は行わず、Authorization:
+// Bearer <トークン>のペイロードをそのまま信頼するfake authenticator。
+// トークンはJWTと同じ形式（header.payload.signature、いずれもbase64url）で、
+// frontend側は本物のセッショントークンと同様にjwt-decodeでpayloadを表示に
+// 使える（frontend/e2e/auth.jsが同じ形式で発行する）。
+// backend/src/lib/sessionToken.jsのcreateSessionAuthenticatorと同じ
 // authenticate(headers)インターフェースを実装するのみで、本番コードには
 // 一切手を入れない。
 function createFakeAuthenticator() {
