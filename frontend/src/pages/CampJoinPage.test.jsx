@@ -15,6 +15,7 @@ vi.mock("../api/client.js", () => ({
   },
   setAuthToken: vi.fn(),
   setUnauthorizedHandler: vi.fn(),
+  exchangeGoogleIdTokenForSession: vi.fn(),
 }));
 
 function renderPage() {

@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 // api/client.jsはReactに依存しないプレーンなモジュールのため、AuthContextから
-// ログイン状態（idToken）をモジュール変数として同期させる方式にする。
+// ログイン状態（セッショントークン）をモジュール変数として同期させる方式にする。
 let authToken = null;
 let onUnauthorized = null;
 
@@ -11,6 +11,25 @@ export function setAuthToken(token) {
 
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
+}
+
+// Google IDトークンをバックエンド自社発行のセッショントークンへ交換する。
+// この時点ではまだ保存済みのセッショントークンが無いため、request()ヘルパー
+// （保存済みauthTokenをAuthorizationへ自動付与する）は使わず、Google ID
+// トークン自体をBearerとして直接送る専用の呼び出しにする。
+export async function exchangeGoogleIdTokenForSession(googleIdToken) {
+  const response = await fetch(`${BASE_URL}/auth/session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${googleIdToken}`,
+    },
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.message || `ログインに失敗しました: ${response.status}`);
+  }
+  return response.json();
 }
 
 async function request(path, options = {}) {

@@ -11,10 +11,9 @@ vi.mock("@react-oauth/google", () => ({
   },
 }));
 
-function renderLoginPage({ authError = null } = {}) {
-  const login = vi.fn();
+function renderLoginPage({ authError = null, login = vi.fn() } = {}) {
   render(
-    <AuthContext.Provider value={{ idToken: null, user: null, authError, login, logout: vi.fn() }}>
+    <AuthContext.Provider value={{ sessionToken: null, user: null, authError, login, logout: vi.fn() }}>
       <LoginPage />
     </AuthContext.Provider>
   );
@@ -26,6 +25,15 @@ describe("LoginPage", () => {
     const { login } = renderLoginPage();
     capturedProps.onSuccess({ credential: "fake-id-token" });
     expect(login).toHaveBeenCalledWith("fake-id-token");
+  });
+
+  it("セッション交換に失敗した場合、エラーメッセージを表示する", async () => {
+    const login = vi.fn().mockRejectedValue(new Error("network error"));
+    renderLoginPage({ login });
+    await capturedProps.onSuccess({ credential: "fake-id-token" });
+    expect(
+      await screen.findByText("ログイン処理に失敗しました。もう一度お試しください。")
+    ).toBeInTheDocument();
   });
 
   it("Googleログイン失敗時、エラーメッセージを表示する", async () => {

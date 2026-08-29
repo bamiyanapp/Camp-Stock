@@ -96,7 +96,7 @@ const buildTimeLabel = new Date(__APP_BUILD_TIME__).toLocaleString("ja-JP", {
 });
 
 function AppHeader() {
-  const { idToken, user, logout } = useAuth();
+  const { sessionToken, user, logout } = useAuth();
   return (
     <div className="mb-6 flex items-start justify-between">
       <div className="flex items-start gap-2">
@@ -108,15 +108,15 @@ function AppHeader() {
           <p className="text-xs opacity-50">更新日時: {buildTimeLabel}</p>
         </div>
       </div>
-      {idToken && user && <AccountMenu user={user} onLogout={() => logout()} />}
+      {sessionToken && user && <AccountMenu user={user} onLogout={() => logout()} />}
     </div>
   );
 }
 
 function AppContent() {
-  const { idToken } = useAuth();
+  const { sessionToken } = useAuth();
 
-  if (!idToken) {
+  if (!sessionToken) {
     return <LoginPage />;
   }
 

@@ -6,13 +6,17 @@ export default function LoginPage() {
   const { login, authError } = useAuth();
   const [error, setError] = useState(null);
 
-  function handleSuccess(credentialResponse) {
+  async function handleSuccess(credentialResponse) {
     if (!credentialResponse.credential) {
       setError("Googleからログイン情報を取得できませんでした。もう一度お試しください。");
       return;
     }
     setError(null);
-    login(credentialResponse.credential);
+    try {
+      await login(credentialResponse.credential);
+    } catch {
+      setError("ログイン処理に失敗しました。もう一度お試しください。");
+    }
   }
 
   const displayedError = error || authError;
