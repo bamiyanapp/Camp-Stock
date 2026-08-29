@@ -16,7 +16,7 @@ import {
 // HTTPリクエスト相当の入出力を検証するテスト。テストごとに新しい
 // repository/service一式を作る（キャンプの所有者・参加者分離を検証する
 // テストが複数あり、状態を共有すると相互に影響するため）。
-function setupRoutes() {
+function setupRoutes({ authService } = {}) {
   const itemsRepository = createInMemoryItemsRepository();
   const campsRepository = createInMemoryCampsRepository();
   const campItemsRepository = createInMemoryCampItemsRepository();
@@ -35,7 +35,13 @@ function setupRoutes() {
     campMembersRepository,
   });
 
-  return buildRoutes({ itemsService, campsService, campItemsService, campMembersService });
+  return buildRoutes({
+    itemsService,
+    campsService,
+    campItemsService,
+    campMembersService,
+    authService,
+  });
 }
 
 describe("routes", () => {
@@ -432,5 +438,48 @@ describe("routes", () => {
       body: { assignedUserId: null },
     });
     expect(unassigned.body.assignedUserId).toBeNull();
+  });
+});
+
+describe("POST /auth/session", () => {
+  it("skipAuthのため未認証（authenticate未設定）でもauthServiceを経由してセッショントークンを発行する", async () => {
+    const authService = {
+      issueSessionFromGoogleIdToken: async (googleIdToken) => ({
+        sessionToken: `session-for-${googleIdToken}`,
+        user: { userId: "user-1", email: "user@example.com" },
+      }),
+    };
+    // authenticateを設定していても、skipAuth: trueのルートでは呼ばれないことを
+    // このfakeが例外を投げることで確認する
+    const router = createRouter(setupRoutes({ authService }), {
+      authenticate: async () => {
+        throw new Error("skipAuthのルートでauthenticateが呼ばれてはいけない");
+      },
+    });
+
+    const result = await router.handleRequest({
+      method: "POST",
+      path: "/auth/session",
+      headers: { authorization: "Bearer google-id-token" },
+      body: {},
+    });
+    expect(result).toEqual({
+      statusCode: 200,
+      body: {
+        sessionToken: "session-for-google-id-token",
+        user: { userId: "user-1", email: "user@example.com" },
+      },
+    });
+  });
+
+  it("Authorizationヘッダーが無ければ401を返す", async () => {
+    const router = createRouter(setupRoutes({ authService: {} }));
+    const result = await router.handleRequest({
+      method: "POST",
+      path: "/auth/session",
+      headers: {},
+      body: {},
+    });
+    expect(result.statusCode).toBe(401);
   });
 });

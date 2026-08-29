@@ -1,5 +1,32 @@
-export function buildRoutes({ itemsService, campsService, campItemsService, campMembersService }) {
+import { UnauthorizedError } from "../lib/errors.js";
+
+export function buildRoutes({
+  itemsService,
+  campsService,
+  campItemsService,
+  campMembersService,
+  authService,
+}) {
   return [
+    {
+      // Google IDトークンをセッショントークンへ交換する。呼び出し時点では
+      // まだセッショントークンを持たないため認証をスキップし（skipAuth）、
+      // Google IDトークン自体をここで検証する（authService.js参照）。
+      method: "POST",
+      path: "/auth/session",
+      skipAuth: true,
+      handler: async ({ headers }) => {
+        const authHeader = headers?.authorization || headers?.Authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          throw new UnauthorizedError("認証情報がありません");
+        }
+        const googleIdToken = authHeader.slice("Bearer ".length);
+        const { sessionToken, user } =
+          await authService.issueSessionFromGoogleIdToken(googleIdToken);
+        return { statusCode: 200, body: { sessionToken, user } };
+      },
+    },
+
     {
       method: "GET",
       path: "/items",
