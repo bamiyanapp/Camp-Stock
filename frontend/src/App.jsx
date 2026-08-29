@@ -11,6 +11,7 @@ import CampJoinPage from "./pages/CampJoinPage.jsx";
 import ItemsPage from "./pages/ItemsPage.jsx";
 import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration.jsx";
 import UpdateNotifier from "./components/UpdateNotifier.jsx";
+import formatBuildTime from "./components/formatBuildTime.js";
 
 function Navigation() {
   const linkClass = ({ isActive }) => `tab ${isActive ? "tab-active" : ""}`;
@@ -86,14 +87,7 @@ function AccountMenu({ user, onLogout }) {
   );
 }
 
-const buildTimeLabel = new Date(__APP_BUILD_TIME__).toLocaleString("ja-JP", {
-  timeZone: "Asia/Tokyo",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-});
+const buildTimeLabel = formatBuildTime(__APP_BUILD_TIME__);
 
 function AppHeader() {
   const { sessionToken, user, logout } = useAuth();
