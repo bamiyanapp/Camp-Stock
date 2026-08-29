@@ -73,6 +73,32 @@ jobs:
             echo "- 前回デプロイ時と異なる値であるべきか確認する場合は、この値を前回のJob Summaryと比較してください"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # SESSION_SECRETはセッショントークン（JWT）の署名鍵。AWS::SecretsManager::Secret
+      # のGenerateSecretStringによる自動生成を検討したが、デプロイ実行用のIAM
+      # ユーザーにsecretsmanager:GetRandomPassword権限が無く失敗するため
+      # （issue #212）、GOOGLE_OAUTH_CLIENT_IDと同じ運用（GitHub Actions Secrets
+      # へ人間が一度だけ登録し、CIがparameter-overridesで注入）に統一する。
+      - name: Validate SESSION_SECRET
+        env:
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+        run: |
+          if [[ -z "$SESSION_SECRET" ]]; then
+            echo "::error::SESSION_SECRET が設定されていません。GitHubリポジトリのSettings → Secrets and variables → Actions で登録してください（例: openssl rand -hex 32 で生成した64文字のランダムな16進数文字列）"
+            exit 1
+          fi
+          if [[ ${#SESSION_SECRET} -lt 32 ]]; then
+            echo "::error::SESSION_SECRET が短すぎます（${#SESSION_SECRET}文字）。32文字（256bit相当）以上のランダムな文字列にしてください"
+            exit 1
+          fi
+          hash_prefix=$(printf '%s' "$SESSION_SECRET" | sha256sum | cut -c1-8)
+          {
+            echo "## SESSION_SECRET検証"
+            echo ""
+            echo "- 形式チェック: OK（${#SESSION_SECRET}文字）"
+            echo "- ハッシュ（先頭8文字、値そのものではない）: \`$hash_prefix\`"
+            echo "- この値を変更すると、発行済みの全セッショントークンが無効化され、全ユーザーが再ログインを求められます"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Build backend (SAM)
         working-directory: infra
         run: sam build
@@ -82,6 +108,7 @@ jobs:
         working-directory: infra
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         run: |
           sam deploy \
             --stack-name "$STACK_NAME" \
@@ -89,7 +116,7 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides "GoogleClientId=${GOOGLE_CLIENT_ID}"
+            --parameter-overrides "GoogleClientId=${GOOGLE_CLIENT_ID}" "SessionSecret=${SESSION_SECRET}"
 
       - name: Get stack outputs
         id: stack-outputs
