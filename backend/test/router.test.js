@@ -126,4 +126,29 @@ describe("createRouter with authenticate", () => {
     });
     expect(result).toEqual({ statusCode: 200, body: { user: null } });
   });
+
+  it("route.skipAuth: trueの場合、authenticateを呼ばずuser=nullでハンドラを呼ぶ", async () => {
+    const skipAuthRoutes = [
+      {
+        method: "POST",
+        path: "/auth/session",
+        skipAuth: true,
+        handler: async ({ user, headers }) => ({ statusCode: 200, body: { user, headers } }),
+      },
+    ];
+    const authenticate = async () => {
+      throw new Error("skipAuthのルートでauthenticateが呼ばれてはいけない");
+    };
+    const router = createRouter(skipAuthRoutes, { authenticate });
+
+    const result = await router.handleRequest({
+      method: "POST",
+      path: "/auth/session",
+      headers: { authorization: "Bearer google-id-token" },
+      body: {},
+    });
+    expect(result.statusCode).toBe(200);
+    expect(result.body.user).toBeNull();
+    expect(result.body.headers).toEqual({ authorization: "Bearer google-id-token" });
+  });
 });

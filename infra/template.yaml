@@ -21,8 +21,24 @@ Globals:
         CAMP_ITEMS_TABLE_NAME: !Ref CampItemsTable
         CAMP_MEMBERS_TABLE_NAME: !Ref CampMembersTable
         GOOGLE_CLIENT_ID: !Ref GoogleClientId
+        # セッショントークン（JWT）の署名用シークレット。SessionSigningSecretは
+        # GenerateSecretStringで初回デプロイ時に自動生成されるため、人手での
+        # 値の設定は不要。CloudFormationの動的参照で値そのものをデプロイ時に
+        # 解決してLambdaへ渡すため、Lambda実行ロールにSecrets Managerへの
+        # 実行時アクセス権限は不要（ランタイムでのSDK呼び出しも発生しない）。
+        SESSION_SECRET: !Sub "{{resolve:secretsmanager:${SessionSigningSecret}:SecretString:secret}}"
 
 Resources:
+  SessionSigningSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: セッショントークン（JWT）の署名用シークレット。初回デプロイ時に自動生成される
+      GenerateSecretString:
+        SecretStringTemplate: "{}"
+        GenerateStringKey: secret
+        PasswordLength: 64
+        ExcludePunctuation: true
+
   # CORSはAPI Gateway（HTTP API）側で処理し、Lambda（backend/src/handler.js）は
   # Access-Control-Allow-Originを付与しない。フロントエンドの配信元
   # （CloudFrontドメイン）のみを許可する。明示的に定義し、CORS設定

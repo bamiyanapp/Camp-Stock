@@ -9,7 +9,12 @@ import { createCampItemsService } from "./services/campItemsService.js";
 import { createCampMembersService } from "./services/campMembersService.js";
 import { createRouter } from "./router.js";
 import { buildRoutes } from "./routes/index.js";
-import { createGoogleAuthenticator } from "./lib/googleAuth.js";
+import { createSessionAuthenticator } from "./lib/sessionToken.js";
+import { createAuthService } from "./services/authService.js";
+
+// セッショントークンの有効期限（30日）。frontend/src/auth/AuthContext.jsxの
+// Cookie保持期間（COOKIE_MAX_AGE_SECONDS）と一致させる。
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 function toApiResponse({ statusCode, body }) {
   return {
@@ -58,12 +63,21 @@ export async function handler(event) {
     campMembersRepository,
   });
 
-  const authenticate = createGoogleAuthenticator({
-    clientId: process.env.GOOGLE_CLIENT_ID,
+  const authService = createAuthService({
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    sessionSecret: process.env.SESSION_SECRET,
+    sessionMaxAgeSeconds: SESSION_MAX_AGE_SECONDS,
+  });
+
+  // APIリクエストの認証は自社発行のセッショントークンで行う。Google IDトークン
+  // の検証はauthService経由の POST /auth/session（初回ログイン時のみ）に限定する
+  // （dev-standards docs/serverless-api-dynamodb-pattern.md「認証パターン」参照）。
+  const authenticate = createSessionAuthenticator({
+    secret: process.env.SESSION_SECRET,
   });
 
   const router = createRouter(
-    buildRoutes({ itemsService, campsService, campItemsService, campMembersService }),
+    buildRoutes({ itemsService, campsService, campItemsService, campMembersService, authService }),
     { authenticate }
   );
 
