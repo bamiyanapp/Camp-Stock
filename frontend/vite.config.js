@@ -1,21 +1,16 @@
-import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
 import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-
-// semantic-releaseが更新するルートpackage.jsonのバージョンをビルド時に埋め込む
-// （frontend/package.jsonのversionはsemantic-releaseの対象外のため使わない）
-const rootPackageVersion = JSON.parse(
-  readFileSync(new URL("../package.json", import.meta.url))
-).version;
+import getAppVersionDefine from "./getAppVersionDefine.js"; // dev-standards/shared/ui/からsymlink
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   define: {
-    __APP_VERSION__: JSON.stringify(rootPackageVersion),
-    __APP_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    // semantic-releaseが更新するルートpackage.jsonのバージョンをビルド時に埋め込む
+    // （frontend/package.jsonのversionはsemantic-releaseの対象外のため使わない）
+    ...getAppVersionDefine(new URL("../package.json", import.meta.url)),
   },
   // dev-standards submoduleからsymlinkで共有しているコンポーネント
   // （docs/shared-ui-components.md等）がnpmパッケージ（qrcode.react等）に
