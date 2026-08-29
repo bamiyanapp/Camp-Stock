@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.28.0...v1.29.0) (2026-08-29)
+
+
+### Features
+
+* **auth:** ログインをセッショントークン交換フローへ切り替える ([#208](https://github.com/bamiyanapp/Camp-Stock/issues/208)) ([7a049cd](https://github.com/bamiyanapp/Camp-Stock/commit/7a049cd425c808f6e05900ebfa0ed6450a6b527c)), closes [#203](https://github.com/bamiyanapp/Camp-Stock/issues/203)
+
 # [1.28.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.27.1...v1.28.0) (2026-08-29)
 
 
