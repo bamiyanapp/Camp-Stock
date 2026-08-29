@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.27.1...v1.28.0) (2026-08-29)
+
+
+### Features
+
+* **auth:** 自社発行セッショントークンによる認証へ切り替える ([#205](https://github.com/bamiyanapp/Camp-Stock/issues/205)) ([eb546b9](https://github.com/bamiyanapp/Camp-Stock/commit/eb546b96b881e8f3d6beb5db4096663417e00518)), closes [#202](https://github.com/bamiyanapp/Camp-Stock/issues/202)
+
 ## [1.27.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.27.0...v1.27.1) (2026-08-17)
 
 
