@@ -1,3 +1,10 @@
+## [1.29.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.29.0...v1.29.1) (2026-08-29)
+
+
+### Bug Fixes
+
+* **infra:** SESSION_SECRETをSecretsManager自動生成からGitHub Actions Secrets注入へ変更 ([#213](https://github.com/bamiyanapp/Camp-Stock/issues/213)) ([4dce344](https://github.com/bamiyanapp/Camp-Stock/commit/4dce3442fc286d7eb159ee32ef3d6aea7e128298)), closes [#212](https://github.com/bamiyanapp/Camp-Stock/issues/212)
+
 # [1.29.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.28.0...v1.29.0) (2026-08-29)
 
 
