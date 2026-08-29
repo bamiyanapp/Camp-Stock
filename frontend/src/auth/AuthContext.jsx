@@ -1,12 +1,17 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { setAuthToken, setUnauthorizedHandler } from "../api/client.js";
+import { setAuthToken, setUnauthorizedHandler, exchangeGoogleIdTokenForSession } from "../api/client.js";
 import { AuthContext } from "./authContext.js";
 
+// Cookie名自体は、Google IDトークンを直接保持していた頃からの互換のため変更
+// していない（実際に保持する値は、下記の通りバックエンド自社発行のセッション
+// トークンに変わっている）。
 const STORAGE_KEY = "camp-stock-id-token";
 // 30日: ブラウザを閉じて再訪問してもログイン状態を維持するための保持期間。
-// IDトークン自体の有効期限（通常1時間程度）が切れている場合は、これまで通り
-// APIの401応答（onUnauthorized）で自動ログアウトされる。
+// バックエンドが発行するセッショントークン自体の有効期限もこれに合わせて
+// いる（backend/src/handler.jsのSESSION_MAX_AGE_SECONDS）。トークンが失効
+// している場合は、これまで通りAPIの401応答（onUnauthorized）で自動ログアウト
+// される。
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 function readSessionCookie() {
@@ -23,14 +28,16 @@ function writeSessionCookie(value, maxAgeSeconds) {
   document.cookie = `${STORAGE_KEY}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax${secure}`;
 }
 
-function decodeUser(idToken) {
-  if (!idToken) {
+function decodeUser(sessionToken) {
+  if (!sessionToken) {
     return null;
   }
   try {
-    const payload = jwtDecode(idToken);
-    // subはGoogleアカウントの一意なID（バックエンドのownerUserId等と同じ値）。
-    // キャンプの所有者判定（招待リンクの表示可否等）に使う。
+    const payload = jwtDecode(sessionToken);
+    // subはGoogleアカウントの一意なユーザーID（バックエンドのownerUserId等と
+    // 同じ値）。セッショントークンの発行時にsubject（=jwtDecode後のsub）へ
+    // Google IDトークンのsubをそのまま引き継いでいる（backend/src/lib/
+    // sessionToken.js）。キャンプの所有者判定（招待リンクの表示可否等）に使う。
     return {
       sub: payload.sub,
       name: payload.name,
@@ -50,9 +57,9 @@ export function AuthProvider({ children }) {
   // Authorizationヘッダーがまだ設定されていない状態で最初のAPIリクエストが
   // 送信され、401→自動ログアウトが起きる。これを避けるため、
   // 初期状態の算出（レンダーフェーズ、子のマウントより前）とlogin/logout
-  // （呼び出し元の同期処理内）でsetAuthTokenを直接呼び、子コンポーネントの
+  // （呼び出し元の処理内）でsetAuthTokenを直接呼び、子コンポーネントの
   // effectが実行される前に確実にauthTokenを確定させる。
-  const [idToken, setIdToken] = useState(() => {
+  const [sessionToken, setSessionToken] = useState(() => {
     const stored = readSessionCookie();
     setAuthToken(stored);
     return stored;
@@ -61,11 +68,15 @@ export function AuthProvider({ children }) {
   // よう、logout()呼び出し後も保持する（次のlogin()成功時にクリアする）。
   const [authError, setAuthError] = useState(null);
 
-  const login = useCallback((token) => {
-    writeSessionCookie(token, COOKIE_MAX_AGE_SECONDS);
-    setAuthToken(token);
+  // Googleが発行するIDトークン（有効期限は約1時間、延長不可）を直接保持する
+  // のではなく、バックエンドの POST /auth/session で自社発行のセッション
+  // トークン（30日）へ交換してから保存する（Issue #201: 再ログイン回避）。
+  const login = useCallback(async (googleIdToken) => {
+    const { sessionToken: issuedToken } = await exchangeGoogleIdTokenForSession(googleIdToken);
+    writeSessionCookie(issuedToken, COOKIE_MAX_AGE_SECONDS);
+    setAuthToken(issuedToken);
     setAuthError(null);
-    setIdToken(token);
+    setSessionToken(issuedToken);
   }, []);
 
   const logout = useCallback((reason) => {
@@ -74,7 +85,7 @@ export function AuthProvider({ children }) {
     if (reason) {
       setAuthError(reason);
     }
-    setIdToken(null);
+    setSessionToken(null);
   }, []);
 
   useEffect(() => {
@@ -82,8 +93,8 @@ export function AuthProvider({ children }) {
   }, [logout]);
 
   const value = useMemo(
-    () => ({ idToken, user: decodeUser(idToken), authError, login, logout }),
-    [idToken, authError, login, logout]
+    () => ({ sessionToken, user: decodeUser(sessionToken), authError, login, logout }),
+    [sessionToken, authError, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

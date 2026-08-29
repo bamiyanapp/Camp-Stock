@@ -18,6 +18,7 @@ vi.mock("../api/client.js", () => ({
   },
   setAuthToken: vi.fn(),
   setUnauthorizedHandler: vi.fn(),
+  exchangeGoogleIdTokenForSession: vi.fn(),
 }));
 
 // btoaはLatin1範囲外の文字（日本語名等）を扱えないため、UTF-8バイト列に
