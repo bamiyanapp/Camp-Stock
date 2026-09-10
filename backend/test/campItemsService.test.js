@@ -173,6 +173,66 @@ describe("campItemsService", () => {
     await expect(service.seedAllMatchingItems("missing")).rejects.toThrow(/not found/);
   });
 
+  describe("持ち物の「既定で持っていく」実績（issue #221）", () => {
+    it("seedAllMatchingItems: defaultUsedForCarがfalseの持ち物は車キャンプの候補から除外される（未選択で初期化）", async () => {
+      await itemsRepository.put({ ...carItem, defaultUsedForCar: false });
+
+      await service.seedAllMatchingItems("camp-1");
+
+      const list = await service.listForCamp("camp-1", "user-1");
+      const target = list.find((r) => r.itemId === "item-car");
+      expect(target.used).toBe(false);
+    });
+
+    it("seedAllMatchingItems: defaultUsedForCar未設定の持ち物は互換のためtrue扱いで初期化される", async () => {
+      await service.seedAllMatchingItems("camp-1");
+
+      const list = await service.listForCamp("camp-1", "user-1");
+      const target = list.find((r) => r.itemId === "item-car");
+      expect(target.used).toBe(true);
+    });
+
+    it("setUsed(true): キャンプの移動手段に対応するdefaultUsedフィールドをtrueに更新する", async () => {
+      await itemsRepository.put({ ...carItem, defaultUsedForCar: false });
+
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+
+      const updatedItem = await itemsRepository.get("item-car");
+      expect(updatedItem.defaultUsedForCar).toBe(true);
+    });
+
+    it("setUsed(false): キャンプの移動手段に対応するdefaultUsedフィールドをfalseに更新する", async () => {
+      await service.setUsed("camp-1", "item-car", true, "user-1");
+
+      await service.setUsed("camp-1", "item-car", false, "user-1");
+
+      const updatedItem = await itemsRepository.get("item-car");
+      expect(updatedItem.defaultUsedForCar).toBe(false);
+    });
+
+    it("setUsed: もう一方の移動手段（bike）側のdefaultUsedフィールドには影響しない", async () => {
+      await itemsRepository.put({ ...bothItem, defaultUsedForBike: true });
+
+      await service.setUsed("camp-1", "item-both", false, "user-1");
+
+      const updatedItem = await itemsRepository.get("item-both");
+      expect(updatedItem.defaultUsedForCar).toBe(false);
+      expect(updatedItem.defaultUsedForBike).toBe(true);
+    });
+
+    it("次回の同じ移動手段のキャンプ作成では、前回の実績（setUsedで更新されたdefaultUsed）を引き継ぐ", async () => {
+      await service.seedAllMatchingItems("camp-1");
+      await service.setUsed("camp-1", "item-car", false, "user-1");
+
+      await campsRepository.put({ ...carCamp, campId: "camp-2" });
+      await service.seedAllMatchingItems("camp-2");
+
+      const list = await service.listForCamp("camp-2", "user-1");
+      const target = list.find((r) => r.itemId === "item-car");
+      expect(target.used).toBe(false);
+    });
+  });
+
   it("setUsed(false): 使用を解除すると積み込み状態もリセットされる", async () => {
     await service.setUsed("camp-1", "item-car", true, "user-1");
     await service.setPacked("camp-1", "item-car", true, "user-1");

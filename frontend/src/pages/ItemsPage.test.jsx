@@ -49,6 +49,8 @@ describe("ItemsPage", () => {
         emoji: "",
         category: "キャンプ",
         vehicleType: "both",
+        defaultUsedForCar: true,
+        defaultUsedForBike: true,
       });
     });
   });
@@ -73,6 +75,8 @@ describe("ItemsPage", () => {
         emoji: "🏮",
         category: "キャンプ",
         vehicleType: "both",
+        defaultUsedForCar: true,
+        defaultUsedForBike: true,
       });
     });
   });
@@ -115,6 +119,8 @@ describe("ItemsPage", () => {
         emoji: "",
         category: "住",
         vehicleType: "both",
+        defaultUsedForCar: true,
+        defaultUsedForBike: true,
       });
     });
   });
@@ -154,6 +160,8 @@ describe("ItemsPage", () => {
         vehicleType: "car",
         storageLocation: undefined,
         notes: undefined,
+        defaultUsedForCar: true,
+        defaultUsedForBike: true,
       });
     });
   });
@@ -181,6 +189,8 @@ describe("ItemsPage", () => {
         vehicleType: "car",
         storageLocation: undefined,
         notes: undefined,
+        defaultUsedForCar: true,
+        defaultUsedForBike: true,
       });
     });
   });
@@ -212,6 +222,8 @@ describe("ItemsPage", () => {
         vehicleType: "car",
         storageLocation: undefined,
         notes: undefined,
+        defaultUsedForCar: true,
+        defaultUsedForBike: true,
       });
     });
   });
@@ -238,5 +250,106 @@ describe("ItemsPage", () => {
     expect(screen.getByText("テント")).toBeInTheDocument();
     expect(screen.getByText("タンクバッグ")).toBeInTheDocument();
     expect(screen.getByText("さいふ")).toBeInTheDocument();
+  });
+
+  describe("持ち物の「既定で持っていく」実績（issue #221）", () => {
+    it("一覧に既定で持っていくかどうかの状態が表示される", async () => {
+      api.listItems.mockResolvedValue([
+        {
+          itemId: "1",
+          name: "テント",
+          category: "住",
+          vehicleType: "both",
+          defaultUsedForCar: true,
+          defaultUsedForBike: false,
+        },
+      ]);
+      render(<ItemsPage />);
+      const tentRow = await screen.findByText("テント");
+
+      expect(within(tentRow.closest("li")).getByText("既定: 車=持っていく / バイク=持っていかない")).toBeInTheDocument();
+    });
+
+    it("持ち物マスタ作成時、車のみを選ぶとバイクの既定チェックボックスは表示されない", async () => {
+      const user = userEvent.setup();
+      render(<ItemsPage />);
+      await screen.findByText("テント");
+
+      const createForm = screen.getByPlaceholderText("品名").closest("form");
+      const [, vehicleSelect] = within(createForm).getAllByRole("combobox");
+      await user.selectOptions(vehicleSelect, "車のみ");
+
+      expect(within(createForm).getByLabelText("車で持っていく（既定）")).toBeInTheDocument();
+      expect(within(createForm).queryByLabelText("バイクで持っていく（既定）")).not.toBeInTheDocument();
+    });
+
+    it("持ち物マスタ作成時、既定チェックを外すとdefaultUsedForCar: falseで作成する", async () => {
+      const user = userEvent.setup();
+      api.createItem.mockResolvedValue({ itemId: "4", name: "ランタン" });
+      render(<ItemsPage />);
+      await screen.findByText("テント");
+
+      await user.type(screen.getByPlaceholderText("品名"), "ランタン");
+      await user.type(
+        screen.getByPlaceholderText("ジャンル（例: 調理、住、衣類）"),
+        "キャンプ"
+      );
+      await user.click(screen.getByLabelText("車で持っていく（既定）"));
+      await user.click(screen.getByRole("button", { name: "持ち物を追加" }));
+
+      await waitFor(() => {
+        expect(api.createItem).toHaveBeenCalledWith({
+          name: "ランタン",
+          emoji: "",
+          category: "キャンプ",
+          vehicleType: "both",
+          defaultUsedForCar: false,
+          defaultUsedForBike: true,
+        });
+      });
+    });
+
+    it("編集フォームを開くと既存のdefaultUsedForCar/defaultUsedForBikeが反映され、変更を保存できる", async () => {
+      const user = userEvent.setup();
+      api.listItems.mockResolvedValue([
+        {
+          itemId: "1",
+          name: "テント",
+          category: "住",
+          vehicleType: "both",
+          defaultUsedForCar: true,
+          defaultUsedForBike: false,
+        },
+      ]);
+      api.updateItem.mockResolvedValue({});
+      render(<ItemsPage />);
+      await screen.findByText("テント");
+
+      const tentRow = screen.getByText("テント").closest("li");
+      await user.click(within(tentRow).getByRole("button", { name: "編集" }));
+
+      const editForm = screen.getByDisplayValue("テント").closest("form");
+      const carCheckbox = within(editForm).getByLabelText("車で持っていく（既定）");
+      const bikeCheckbox = within(editForm).getByLabelText("バイクで持っていく（既定）");
+      expect(carCheckbox).toBeChecked();
+      expect(bikeCheckbox).not.toBeChecked();
+
+      await user.click(carCheckbox);
+      await user.click(bikeCheckbox);
+      await user.click(screen.getByRole("button", { name: "保存" }));
+
+      await waitFor(() => {
+        expect(api.updateItem).toHaveBeenCalledWith("1", {
+          name: "テント",
+          emoji: "",
+          category: "住",
+          vehicleType: "both",
+          storageLocation: undefined,
+          notes: undefined,
+          defaultUsedForCar: false,
+          defaultUsedForBike: true,
+        });
+      });
+    });
   });
 });
