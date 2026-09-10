@@ -122,6 +122,43 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "ログアウト" })).toBeInTheDocument();
   });
 
+  it("アカウントアイコンをタップするとユーザー名が表示される", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
+
+    expect(screen.getByText("Test User")).toBeInTheDocument();
+  });
+
+  it("名前が無い場合、アカウントアイコンをタップするとメールアドレスが表示される", () => {
+    setSessionCookie(fakeIdToken({ email: "test@example.com" }));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
+
+    expect(screen.getByText("test@example.com")).toBeInTheDocument();
+  });
+
+  it("アカウントアイコンをタップするとアプリを共有するボタンが現れる", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
+
+    expect(screen.getByRole("button", { name: "アプリを共有" })).toBeInTheDocument();
+  });
+
+  it("アプリを共有ボタンをタップするとアプリのトップURLのQRコードを表示する", () => {
+    setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "アカウントメニュー" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "アプリを共有" }));
+
+    expect(screen.getByText(`${window.location.origin}/`)).toBeInTheDocument();
+  });
+
   it("アカウントアイコンを再度タップするとメニューが閉じる", () => {
     setSessionCookie(fakeIdToken({ name: "Test User", email: "test@example.com" }));
     render(<App />);

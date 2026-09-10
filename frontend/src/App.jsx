@@ -11,6 +11,7 @@ import CampJoinPage from "./pages/CampJoinPage.jsx";
 import ItemsPage from "./pages/ItemsPage.jsx";
 import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration.jsx";
 import UpdateNotifier from "./components/UpdateNotifier.jsx";
+import ShareButton from "./components/ShareButton.jsx";
 import formatBuildTime from "./components/formatBuildTime.js";
 
 function Navigation() {
@@ -68,7 +69,11 @@ function AccountMenu({ user, onLogout }) {
             aria-label="メニューを閉じる"
             onClick={() => setOpen(false)}
           />
-          <ul className="menu dropdown-content absolute right-0 z-20 mt-2 w-40 rounded-box bg-base-200 p-2 shadow">
+          <ul className="menu dropdown-content absolute right-0 z-20 mt-2 w-56 rounded-box bg-base-200 p-2 shadow">
+            <li className="menu-title">{user.name || user.email}</li>
+            <li>
+              <ShareButton label="アプリを共有" getUrl={() => `${window.location.origin}/`} />
+            </li>
             <li>
               <button
                 type="button"
