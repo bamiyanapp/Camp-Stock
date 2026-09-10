@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.29.2...v1.30.0) (2026-09-10)
+
+
+### Features
+
+* **frontend:** アカウントメニューにユーザー名表示とアプリ共有リンクを追加する ([#271](https://github.com/bamiyanapp/Camp-Stock/issues/271)) ([293db1b](https://github.com/bamiyanapp/Camp-Stock/commit/293db1bc6253d75e89236ddaa5dac502809d0044)), closes [bamiyanapp/dev-standards#393](https://github.com/bamiyanapp/dev-standards/issues/393) [#220](https://github.com/bamiyanapp/Camp-Stock/issues/220)
+
 ## [1.29.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.29.1...v1.29.2) (2026-09-10)
 
 
