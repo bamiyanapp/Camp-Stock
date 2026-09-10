@@ -1,3 +1,10 @@
+## [1.29.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.29.1...v1.29.2) (2026-09-10)
+
+
+### Bug Fixes
+
+* **frontend:** ShareButton.jsxをdaisyUI版のローカルコピーへ固定する ([#267](https://github.com/bamiyanapp/Camp-Stock/issues/267)) ([3b831f3](https://github.com/bamiyanapp/Camp-Stock/commit/3b831f38f69f6ae2407c3fcaa54aae0e547fe2c8)), closes [bamiyanapp/dev-standards#393](https://github.com/bamiyanapp/dev-standards/issues/393)
+
 ## [1.29.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.29.0...v1.29.1) (2026-08-29)
 
 
