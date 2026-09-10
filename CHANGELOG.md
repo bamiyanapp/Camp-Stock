@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.30.0...v1.31.0) (2026-09-10)
+
+
+### Features
+
+* 持ち物リストの「持っていくか」既定値を車・バイク別に編集可能にする ([#273](https://github.com/bamiyanapp/Camp-Stock/issues/273)) ([b09cfaf](https://github.com/bamiyanapp/Camp-Stock/commit/b09cfaf0cd48f7d3f45c8c2e542c215b2485b5de)), closes [#221](https://github.com/bamiyanapp/Camp-Stock/issues/221)
+
 # [1.30.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.29.2...v1.30.0) (2026-09-10)
 
 
