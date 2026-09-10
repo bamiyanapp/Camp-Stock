@@ -63,6 +63,62 @@ describe("itemsService", () => {
     expect(item.updatedBy).toBe("user-1");
   });
 
+  it("create: defaultUsedForCar/defaultUsedForBikeを省略した場合はtrueになる", async () => {
+    const item = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "both",
+    });
+    expect(item.defaultUsedForCar).toBe(true);
+    expect(item.defaultUsedForBike).toBe(true);
+  });
+
+  it("create: defaultUsedForCar/defaultUsedForBikeを明示的に指定できる", async () => {
+    const item = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "both",
+      defaultUsedForCar: true,
+      defaultUsedForBike: false,
+    });
+    expect(item.defaultUsedForCar).toBe(true);
+    expect(item.defaultUsedForBike).toBe(false);
+  });
+
+  it("update: defaultUsedForCar/defaultUsedForBikeを更新できる", async () => {
+    const created = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "both",
+    });
+    const updated = await service.update(created.itemId, {
+      name: "テント",
+      category: "住",
+      vehicleType: "both",
+      defaultUsedForCar: false,
+      defaultUsedForBike: true,
+    });
+    expect(updated.defaultUsedForCar).toBe(false);
+    expect(updated.defaultUsedForBike).toBe(true);
+  });
+
+  it("update: defaultUsedForCar/defaultUsedForBikeを省略した場合は既存の値を維持する", async () => {
+    const created = await service.create({
+      name: "テント",
+      category: "住",
+      vehicleType: "both",
+      defaultUsedForCar: false,
+      defaultUsedForBike: false,
+    });
+    const updated = await service.update(created.itemId, {
+      name: "ティピーテント",
+      category: "住",
+      vehicleType: "both",
+    });
+    expect(updated.defaultUsedForCar).toBe(false);
+    expect(updated.defaultUsedForBike).toBe(false);
+  });
+
   it("update: 既存の持ち物マスタを更新する", async () => {
     const created = await service.create({
       name: "テント",

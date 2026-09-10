@@ -17,6 +17,53 @@ function useUniqueCategories(items) {
   );
 }
 
+// 持ち物マスタのdefaultUsedForCar/defaultUsedForBikeは、次回以降の同じ移動手段の
+// キャンプ作成時に「今回使う」の既定値として引き継がれる実績（issue #221）。
+// フィールド未設定（既存データ）は互換のためtrue扱いにする。
+function isDefaultUsed(value) {
+  return value !== false;
+}
+
+function DefaultUsedCheckboxes({ vehicleType, forCar, forBike, onChangeForCar, onChangeForBike }) {
+  return (
+    <div className="flex flex-col gap-1 text-sm">
+      {(vehicleType === "car" || vehicleType === "both") && (
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm"
+            checked={forCar}
+            onChange={(e) => onChangeForCar(e.target.checked)}
+          />
+          車で持っていく（既定）
+        </label>
+      )}
+      {(vehicleType === "bike" || vehicleType === "both") && (
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm"
+            checked={forBike}
+            onChange={(e) => onChangeForBike(e.target.checked)}
+          />
+          バイクで持っていく（既定）
+        </label>
+      )}
+    </div>
+  );
+}
+
+function DefaultUsedSummary({ item }) {
+  const parts = [];
+  if (item.vehicleType === "car" || item.vehicleType === "both") {
+    parts.push(`車=${isDefaultUsed(item.defaultUsedForCar) ? "持っていく" : "持っていかない"}`);
+  }
+  if (item.vehicleType === "bike" || item.vehicleType === "both") {
+    parts.push(`バイク=${isDefaultUsed(item.defaultUsedForBike) ? "持っていく" : "持っていかない"}`);
+  }
+  return <p className="text-xs opacity-60">既定: {parts.join(" / ")}</p>;
+}
+
 function CategorySelect({ uniqueCategories, selection, onSelectionChange, newCategory, onNewCategoryChange }) {
   return (
     <>
@@ -54,6 +101,8 @@ export default function ItemsPage() {
   const [categorySelection, setCategorySelection] = useState(NEW_CATEGORY_OPTION);
   const [newCategory, setNewCategory] = useState("");
   const [vehicleType, setVehicleType] = useState("both");
+  const [defaultUsedForCar, setDefaultUsedForCar] = useState(true);
+  const [defaultUsedForBike, setDefaultUsedForBike] = useState(true);
   const [filterVehicleType, setFilterVehicleType] = useState("all");
   const [editingItemId, setEditingItemId] = useState(null);
   const [editName, setEditName] = useState("");
@@ -61,6 +110,8 @@ export default function ItemsPage() {
   const [editCategorySelection, setEditCategorySelection] = useState(NEW_CATEGORY_OPTION);
   const [editNewCategory, setEditNewCategory] = useState("");
   const [editVehicleType, setEditVehicleType] = useState("both");
+  const [editDefaultUsedForCar, setEditDefaultUsedForCar] = useState(true);
+  const [editDefaultUsedForBike, setEditDefaultUsedForBike] = useState(true);
 
   const uniqueCategories = useUniqueCategories(items);
   const category = categorySelection === NEW_CATEGORY_OPTION ? newCategory : categorySelection;
@@ -81,11 +132,13 @@ export default function ItemsPage() {
   async function handleCreate(event) {
     event.preventDefault();
     try {
-      await api.createItem({ name, emoji, category, vehicleType });
+      await api.createItem({ name, emoji, category, vehicleType, defaultUsedForCar, defaultUsedForBike });
       setName("");
       setEmoji("");
       setCategorySelection(NEW_CATEGORY_OPTION);
       setNewCategory("");
+      setDefaultUsedForCar(true);
+      setDefaultUsedForBike(true);
       reload();
     } catch (err) {
       setError(err.message);
@@ -108,6 +161,8 @@ export default function ItemsPage() {
     setEditCategorySelection(item.category);
     setEditNewCategory("");
     setEditVehicleType(item.vehicleType);
+    setEditDefaultUsedForCar(isDefaultUsed(item.defaultUsedForCar));
+    setEditDefaultUsedForBike(isDefaultUsed(item.defaultUsedForBike));
   }
 
   function cancelEdit() {
@@ -124,6 +179,8 @@ export default function ItemsPage() {
         vehicleType: editVehicleType,
         storageLocation: item.storageLocation,
         notes: item.notes,
+        defaultUsedForCar: editDefaultUsedForCar,
+        defaultUsedForBike: editDefaultUsedForBike,
       });
       setEditingItemId(null);
       reload();
@@ -174,6 +231,13 @@ export default function ItemsPage() {
           <option value="car">車のみ</option>
           <option value="bike">バイクのみ</option>
         </select>
+        <DefaultUsedCheckboxes
+          vehicleType={vehicleType}
+          forCar={defaultUsedForCar}
+          forBike={defaultUsedForBike}
+          onChangeForCar={setDefaultUsedForCar}
+          onChangeForBike={setDefaultUsedForBike}
+        />
         <button type="submit" className="btn btn-primary">
           持ち物を追加
         </button>
@@ -236,6 +300,13 @@ export default function ItemsPage() {
                     <option value="car">車のみ</option>
                     <option value="bike">バイクのみ</option>
                   </select>
+                  <DefaultUsedCheckboxes
+                    vehicleType={editVehicleType}
+                    forCar={editDefaultUsedForCar}
+                    forBike={editDefaultUsedForBike}
+                    onChangeForCar={setEditDefaultUsedForCar}
+                    onChangeForBike={setEditDefaultUsedForBike}
+                  />
                   <div className="flex gap-2">
                     <button type="submit" className="btn btn-sm btn-primary">
                       保存
@@ -262,6 +333,7 @@ export default function ItemsPage() {
                   <span className="badge badge-ghost ml-2">
                     {VEHICLE_LABELS[item.vehicleType]}
                   </span>
+                  <DefaultUsedSummary item={item} />
                 </div>
                 <div className="flex gap-2">
                   <button

@@ -2,6 +2,12 @@ import { matchesVehicle } from "../domain/vehicleType.js";
 import { NotFoundError } from "../lib/errors.js";
 import { assertCampMember } from "./campAuthorization.js";
 
+// キャンプの移動手段（car/bike）に応じて、持ち物マスタのどちらの「既定で
+// 持っていくか」フィールドを見る・更新するかを決める（issue #221）。
+function defaultUsedFieldFor(campVehicleType) {
+  return campVehicleType === "car" ? "defaultUsedForCar" : "defaultUsedForBike";
+}
+
 // キャンプごとの持ち物状態は、CampItemsテーブルに「今回使う」として選択された
 // アイテムのレコードのみを持つ設計にする（レコードが存在する = used）。
 // 積んだかどうか（packed）はそのレコードの属性として管理する。
@@ -55,6 +61,19 @@ export function createCampItemsService({
       }
       await assertCampMember(camp, userId, campMembersRepository);
 
+      // 今回の実際の使用/不使用を、キャンプの移動手段に対応する「既定で
+      // 持っていくか」の実績として持ち物マスタへ反映する。次回以降の同じ
+      // 移動手段のキャンプ作成時（seedAllMatchingItems）はこの実績を引き継ぐ
+      // （issue #221）。もう一方の移動手段側の実績には影響しない。
+      const defaultUsedField = defaultUsedFieldFor(camp.vehicleType);
+      if (item[defaultUsedField] !== used) {
+        await itemsRepository.put({
+          ...item,
+          [defaultUsedField]: used,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
       if (!used) {
         await campItemsRepository.delete(campId, itemId);
         return { campId, itemId, used: false, packed: false, assignedUserId: null };
@@ -83,19 +102,23 @@ export function createCampItemsService({
       return { campId, itemId, used: true, packed: false, assignedUserId: null };
     },
 
-    // 新しいキャンプ作成直後に呼び出し、移動手段が対応する持ち物マスタ全件を
-    // 「今回使う」状態（used: true）で初期化する。今回使わない持ち物は、
-    // 選択編集画面（フロントエンドの持ち物選択ページ）から個別に外す運用とする。
-    // packed（積み込み状態）は常にfalseから始める。
+    // 新しいキャンプ作成直後に呼び出し、移動手段が対応する持ち物マスタのうち
+    // 「既定で持っていく」（defaultUsedForCar/defaultUsedForBike、前回までの
+    // 実績を引き継いだ値。フィールド未設定の持ち物は互換のためtrue扱い）と
+    // なっている持ち物を「今回使う」状態（used: true）で初期化する
+    // （issue #221）。それ以外の持ち物は、選択編集画面（フロントエンドの
+    // 持ち物選択ページ）から個別に追加する運用とする。packed（積み込み状態）
+    // は常にfalseから始める。
     async seedAllMatchingItems(campId) {
       const camp = await campsRepository.get(campId);
       if (!camp) {
         throw new NotFoundError(`camp not found: ${campId}`);
       }
+      const defaultUsedField = defaultUsedFieldFor(camp.vehicleType);
       const allItems = await itemsRepository.list();
-      const matchingItems = allItems.filter((item) =>
-        matchesVehicle(item.vehicleType, camp.vehicleType)
-      );
+      const matchingItems = allItems
+        .filter((item) => matchesVehicle(item.vehicleType, camp.vehicleType))
+        .filter((item) => item[defaultUsedField] !== false);
       const now = new Date().toISOString();
       await Promise.all(
         matchingItems.map((item) =>
