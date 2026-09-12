@@ -1,3 +1,10 @@
+# [1.32.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.31.0...v1.32.0) (2026-09-12)
+
+
+### Features
+
+* **e2e:** E2E認証バイパスをdev-standards共有コードへ移行する ([#291](https://github.com/bamiyanapp/Camp-Stock/issues/291)) ([3e3b2d6](https://github.com/bamiyanapp/Camp-Stock/commit/3e3b2d6bcaa2b28e656c8f100d80d76cdcc2e2be))
+
 # [1.31.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.30.0...v1.31.0) (2026-09-10)
 
 
