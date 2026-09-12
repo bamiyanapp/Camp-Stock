@@ -5,6 +5,8 @@
     { "source": "shared/pwa/UpdateNotifier.jsx", "target": "frontend/src/components/UpdateNotifier.jsx" },
     { "source": "shared/ui/common-theme.css", "target": "frontend/src/common-theme.css" },
     { "source": "shared/ui/getAppVersionDefine.js", "target": "frontend/getAppVersionDefine.js" },
-    { "source": "shared/ui/formatBuildTime.js", "target": "frontend/src/components/formatBuildTime.js" }
+    { "source": "shared/ui/formatBuildTime.js", "target": "frontend/src/components/formatBuildTime.js" },
+    { "source": "shared/e2e/fakeAuthenticator.js", "target": "backend/e2e/fakeAuthenticator.js" },
+    { "source": "shared/e2e/fakeSessionToken.js", "target": "frontend/e2e/fakeSessionToken.js" }
   ]
 }
