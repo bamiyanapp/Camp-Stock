@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.32.0...v1.33.0) (2026-09-13)
+
+
+### Features
+
+* **ci:** コード重複検知（duplication-check）を閾値5%で有効化する ([#296](https://github.com/bamiyanapp/Camp-Stock/issues/296)) ([d6b276f](https://github.com/bamiyanapp/Camp-Stock/commit/d6b276f5a705f18dbfe8a77f665a7088d0a53f8c))
+
 # [1.32.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.31.0...v1.32.0) (2026-09-12)
 
 
