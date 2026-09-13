@@ -31,5 +31,11 @@ jobs:
       # スクリーンショットはJob Summary・PRコメントへ画像として直接埋め込まれる
       # （dev-standards/docs/cicd-pipeline-specification.md参照）。
       enable_e2e_test: true
+      # jscpdによるコード重複検知（duplication-check）。現状の重複率
+      # （2026-09-13時点、テストファイル・e2eディレクトリ除外、合計2.77%。
+      # jsx形式のみ見ると6.23%だが、-tの閾値判定はフォーマット別ではなく
+      # 合計値に対して行われる）に数ポイントの余裕を持たせた値として5を設定する。
+      enable_duplication_check: true
+      duplication_threshold: 5
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
