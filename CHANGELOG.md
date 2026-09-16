@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.34.0...v1.35.0) (2026-09-16)
+
+
+### Features
+
+* **ci:** coverage_thresholdを開発共通標準の80%以上へ引き上げる ([#318](https://github.com/bamiyanapp/Camp-Stock/issues/318)) ([d2ebfae](https://github.com/bamiyanapp/Camp-Stock/commit/d2ebfaecbb677b5c5552dd100fe6399814f48c5e))
+
 # [1.34.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.33.0...v1.34.0) (2026-09-16)
 
 
