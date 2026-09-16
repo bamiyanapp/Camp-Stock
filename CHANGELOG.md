@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.33.0...v1.34.0) (2026-09-16)
+
+
+### Features
+
+* **ci:** CodeQLによる静的セキュリティ解析を導入する ([#315](https://github.com/bamiyanapp/Camp-Stock/issues/315)) ([5008af2](https://github.com/bamiyanapp/Camp-Stock/commit/5008af2a973676ec8b10a548b51a516e5d03525e))
+
 # [1.33.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.32.0...v1.33.0) (2026-09-13)
 
 
