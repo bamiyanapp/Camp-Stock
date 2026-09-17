@@ -49,5 +49,12 @@ jobs:
       # 合計値に対して行われる）に数ポイントの余裕を持たせた値として5を設定する。
       enable_duplication_check: true
       duplication_threshold: 5
+      # Markdownドキュメント（README.md・CLAUDE.md）へtextlintを実行する（Issue #307）。
+      # 共有設定（textlint.config.cjs、dev-standards submodule配下からのsymlink）は
+      # プロダクト側の追加インストール不要でCI側がnpx経由で取得する。CHANGELOG.md
+      # （semantic-releaseの自動生成物）・.clinerules/*.md（dev-standards由来のsymlink、
+      # 実体はdev-standards自身のnpm test内で検証済み）は対象外にする。
+      enable_text_lint: true
+      text_lint_paths: "README.md\nCLAUDE.md"
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
