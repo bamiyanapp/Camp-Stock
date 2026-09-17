@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.35.0...v1.36.0) (2026-09-17)
+
+
+### Features
+
+* **ci:** E2Eテストのカバレッジ収集（e2e_coverage_threshold）を導入する ([#324](https://github.com/bamiyanapp/Camp-Stock/issues/324)) ([58f0dc1](https://github.com/bamiyanapp/Camp-Stock/commit/58f0dc158bba5b2b78474253c00eeabc6c13d88d))
+
 # [1.35.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.34.0...v1.35.0) (2026-09-16)
 
 
