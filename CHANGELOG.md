@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.36.0...v1.37.0) (2026-09-17)
+
+
+### Features
+
+* **ci:** Markdownドキュメントにtextlintを導入する ([#328](https://github.com/bamiyanapp/Camp-Stock/issues/328)) ([0c4fca7](https://github.com/bamiyanapp/Camp-Stock/commit/0c4fca77793684dc1e28cab4bc1c69420cfb0ffc))
+
 # [1.36.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.35.0...v1.36.0) (2026-09-17)
 
 
