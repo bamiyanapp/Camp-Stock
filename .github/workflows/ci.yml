@@ -34,6 +34,15 @@ jobs:
       # スクリーンショットはJob Summary・PRコメントへ画像として直接埋め込まれる
       # （dev-standards/docs/cicd-pipeline-specification.md参照）。
       enable_e2e_test: true
+      # monocart-reporterによるE2E実行時のJSカバレッジ収集（Issue #306、
+      # dev-standards docs/e2e-coverage-pattern.md）。開発共通標準の目標値は
+      # 80%以上だが、新規導入時点（2026-09-17、smoke.spec.js・main-flow.spec.js
+      # の2ケースのみ）の実測値はlines 58.18% / statements 60.28% /
+      # functions 39.88% / branches 37.07%で、80%には遠い。最も低い指標
+      # （branches 37.07%）にも余裕を持たせた30から開始し、E2Eケースを
+      # 追加しつつ段階的に80%へ近づける方針とする（duplication_thresholdと
+      # 同じラチェット方式）。
+      e2e_coverage_threshold: 30
       # jscpdによるコード重複検知（duplication-check）。現状の重複率
       # （2026-09-13時点、テストファイル・e2eディレクトリ除外、合計2.77%。
       # jsx形式のみ見ると6.23%だが、-tの閾値判定はフォーマット別ではなく

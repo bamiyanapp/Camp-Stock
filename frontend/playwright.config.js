@@ -11,7 +11,38 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: [
+    ["list"],
+    ["html", { open: "never" }],
+    [
+      "monocart-reporter",
+      {
+        name: "Camp-Stock E2E Report",
+        outputFile: "./monocart-report/index.html",
+        coverage: {
+          // frontend-testと同じパスに出力する（check-coverage-threshold複合actionの既定、
+          // dev-standards/docs/e2e-coverage-pattern.md参照）。
+          outputDir: "./coverage",
+          reports: [["json-summary"], ["console-summary"]],
+          // Viteのdevサーバー（webServer、下記FRONTEND_PORT）が配信する自プロダクトの
+          // ソースのみを対象にする。node_modules依存パッケージ・バックエンドAPI
+          // （BACKEND_PORT）へのリクエスト・Vite/React Refreshの内部クライアント
+          // スクリプトはentry.urlで除外する。Viteのdevサーバーが発行するインライン
+          // ソースマップの`sources`はファイル名のみ（ディレクトリを含まない）に
+          // 収まるため、e2e-coverage-pattern.mdが示すsourceFilterでの`src/**`等の
+          // パスベースの絞り込みは機能しない（ビルド後のバンドル配信を前提にした
+          // 記法のため）。entry.url側の絞り込みのみで十分に対象を限定できるので、
+          // sourceFilterは素通しにする。
+          entryFilter: (entry) =>
+            entry.url.includes(`localhost:${FRONTEND_PORT}`) &&
+            !entry.url.includes("/node_modules/") &&
+            !entry.url.includes("/@vite/") &&
+            !entry.url.includes("/@react-refresh"),
+          sourceFilter: () => true,
+        },
+      },
+    ],
+  ],
   use: {
     baseURL: `http://localhost:${FRONTEND_PORT}`,
     trace: "on-first-retry",
