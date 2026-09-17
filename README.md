@@ -26,13 +26,13 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 
 ## PWA（ホーム画面追加）
 
-`frontend/public/manifest.json`と`index.html`の`apple-mobile-web-app-*` meta タグにより、iOS Safariでホーム画面に追加した際に正式なPWA（スタンドアロン表示）として認識されるようにしている。iOS Safariには、JavaScriptから操作するストレージ（Cookie/localStorage）を一定期間サイトへの直接アクセスがないと予告なく消去するIntelligent Tracking Prevention（ITP）があり、正式なPWAとして認識されることでこの影響が緩和される可能性がある（効果はApple側の非公開の内部動作に依存し保証はできない）。
+`frontend/public/manifest.json`と`index.html`の`apple-mobile-web-app-*` meta タグにより、iOS Safariでホーム画面に追加した際に正式なPWA（スタンドアロン表示）として認識されるようにしている。iOS Safariには、JavaScriptから操作するストレージ（Cookie/localStorage）を一定期間サイトへの直接アクセスがないと予告なく消去するIntelligent Tracking Prevention（ITP）がある。正式なPWAとして認識されることで、この影響が緩和される可能性がある（効果はApple側の非公開の内部動作に依存し保証はできない）。
 
 ### ホーム画面追加時の更新
 
 スマートフォンのホーム画面に追加した状態（PWA/スタンドアロン表示）でも最新版に追従できるよう、`dev-standards`の`shared/pwa/`パターン（詳細は`dev-standards/docs/service-worker-update-pattern.md`）を導入している。
 
-- `sync-manifest.local.json`（リポジトリルート）で`shared/pwa/sw.js`・`ServiceWorkerRegistration.jsx`・`UpdateNotifier.jsx`をsymlinkとして取り込む（`node dev-standards/scripts/bootstrap.js`で同期）
+- `sync-manifest.local.json`（リポジトリルート）で`shared/pwa/sw.js`・`ServiceWorkerRegistration.jsx`・`UpdateNotifier.jsx`をsymlinkとして取り込む。同期には`node dev-standards/scripts/bootstrap.js`を使う
 - `frontend/public/sw-config.js`（実ファイル、Camp Stock固有）でキャッシュバージョン・先読みURL・APIキャッシュ対象ホストを設定する
 - ページ本体（HTMLナビゲーション）はNetwork First、それ以外の同一オリジンサブリソースはStale-While-Revalidateで扱うため、デプロイ後は常に最新のHTML・アセットを取得できる
 - アプリのフォアグラウンド復帰時・5分おきに更新チェックを行い、新バージョンを検知すると再読み込みを促すバナーを表示する（`UpdateNotifier`）
@@ -46,10 +46,10 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 
 ## データモデル
 
-- **持ち物マスタ（Items）**: `itemId` / `name` / `emoji`（一覧表示用の絵文字アイコン、任意） / `category` / `vehicleType`（`car` | `bike` | `both`）/ `storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID） — 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ
-- **キャンプ（Camps）**: `campId` / `name` / `date` / `vehicleType`（`car` | `bike`）/ `ownerUserId`（作成者のGoogleアカウントID） / `ownerName` / `ownerEmail` / `ownerPicture`（作成者の表示用プロフィール） / `inviteToken`（招待リンクのトークン） — 個々のキャンプ。移動手段を1つ選ぶ。参照・持ち物の操作は所有者・参加者（後述のCampMembers）双方に許可し、キャンプ設定の編集・削除・招待リンクの再発行は所有者のみ許可する（それ以外は403）
+- **持ち物マスタ（Items）**: 持ち物そのものの情報。車/バイクいずれで使えるかを持つ。認証済みユーザーであれば誰でも参照・編集できる共有データ。フィールド: `itemId` / `name` / `emoji`（一覧表示用の絵文字アイコン、任意） / `category` / `vehicleType`（`car` | `bike` | `both`）。ほかに`storageLocation` / `createdBy` / `updatedBy`（作成者・最終更新者のGoogleアカウントID）を持つ
+- **キャンプ（Camps）**: 個々のキャンプ。移動手段を1つ選ぶ。参照・持ち物の操作は所有者・参加者（後述のCampMembers）双方に許可し、キャンプ設定の編集・削除・招待リンクの再発行は所有者のみ許可する（それ以外は403）。フィールド: `campId` / `name` / `date` / `vehicleType`（`car` | `bike`）/ `ownerUserId`（作成者のGoogleアカウントID）。ほかに`ownerName` / `ownerEmail` / `ownerPicture`（作成者の表示用プロフィール） / `inviteToken`（招待リンクのトークン）を持つ
 - **キャンプの参加者（CampMembers）**: `campId` + `userId` をキーに、招待リンク経由でキャンプに参加したユーザー（所有者以外）を保持する。`name` / `email` / `picture`は参加時点のGoogleアカウントのプロフィールを保持する（別途Usersテーブルは持たない設計のため、その後の変更は反映されない）
-- **キャンプごとの持ち物状態（CampItems）**: `campId` + `itemId` をキーに、そのキャンプで「今回使う」と選択された持ち物の積み込み状態（`packed`）と担当者（`assignedUserId`、任意。CampMembersの`userId`または所有者の`ownerUserId`を指す）を保持する。レコードが存在すること自体が「使用中」を表す。担当者は「今回使う」状態の持ち物のみ設定でき、未割り当てには`null`を指定する
+- **キャンプごとの持ち物状態（CampItems）**: `campId` + `itemId` をキーに、そのキャンプで「今回使う」と選択された持ち物の積み込み状態（`packed`）と担当者を保持する。担当者（`assignedUserId`、任意）はCampMembersの`userId`または所有者の`ownerUserId`を指す。レコードが存在すること自体が「使用中」を表す。担当者は「今回使う」状態の持ち物のみ設定でき、未割り当てには`null`を指定する
 
 ## API
 
@@ -64,7 +64,7 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 | GET | `/camps/{campId}` | キャンプ取得（所有者・参加者のみ、それ以外は403） |
 | PUT | `/camps/{campId}` | キャンプ更新（所有者のみ） |
 | DELETE | `/camps/{campId}` | キャンプ削除（所有者のみ） |
-| GET | `/camps/{campId}/members` | 参加者一覧取得（所有者+CampMembers、所有者・参加者のみ） |
+| GET | `/camps/{campId}/members` | 参加者の一覧取得（所有者+CampMembers、所有者・参加者のみ） |
 | POST | `/camps/{campId}/invite-token` | 招待リンクのトークンを再発行する（所有者のみ）。古いリンクは無効になる |
 | POST | `/camps/join` | `{ inviteToken }`を指定して、リクエストしたユーザーをそのキャンプの参加者として登録する |
 | GET | `/camps/{campId}/items` | キャンプの移動手段に対応する持ち物候補と、使用/積み込み状態のマージ結果（所有者・参加者のみ） |
@@ -93,13 +93,13 @@ CIでは`.github/workflows/ci.yml`の`enable_e2e_test: true`により、PR・pus
 
 ### カバレッジ閾値
 
-`.github/workflows/ci.yml`の`coverage_threshold`（現在75%）を下回ると、backend/frontendそれぞれのCIジョブが失敗する。判定対象はlines/statements/functions/branchesの4指標いずれか（`coverage_check_per_file`は無効。backendの`src/repositories/*`はDynamoDB SDKの薄いラッパーで、in-memory repositoryを使う単体テストでは意図的にカバーしない設計のため、ファイル単位判定にすると常に未達になってしまう）。
+`.github/workflows/ci.yml`の`coverage_threshold`（現在80%）を下回ると、backend/frontendそれぞれのCIジョブが失敗する。判定対象はlines/statements/functions/branchesの4指標いずれか。`coverage_check_per_file`は無効にしている。backendの`src/repositories/*`はDynamoDB SDKの薄いラッパーで、in-memory repositoryを使う単体テストでは意図的にカバーしない設計のため、ファイル単位判定にすると常に未達になってしまう。
 
 ## 初期データ
 
 `backend/seed/items-seed.json` に、既存スプレッドシートから移行した持ち物マスタの初期データ（約150件）を収録している。`backend/seed/seed-items.js` で DynamoDB へ投入できる（AWS認証情報とテーブル名の環境変数が必要）。
 
-GitHub Actionsの`Seed items master data`ワークフロー（`.github/workflows/seed-items.yml`）から、CDと同じGitHub SecretsのAWS認証情報を使って手動実行できる（GitHubのActionsタブ→対象ワークフロー→「Run workflow」）。`itemId`をキーにしたPutItemのため、再実行しても重複せず上書きされる。
+GitHub Actionsの`Seed items master data`ワークフロー（`.github/workflows/seed-items.yml`）から、CDと同じGitHub SecretsのAWS認証情報を使って手動実行できる。実行方法はGitHubのActionsタブ→対象ワークフロー→「Run workflow」。`itemId`をキーにしたPutItemのため、再実行しても重複せず上書きされる。
 
 ```sh
 cd backend
