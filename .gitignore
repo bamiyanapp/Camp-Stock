@@ -34,3 +34,9 @@ commit_msg*.txt
 
 # AWS SAM build artifacts
 infra/.aws-sam/
+
+# Playwright E2E実行時の生成物（frontend/coverage/は上のdev-standards管理区間の
+# */coverage/で既にignore済み）
+frontend/monocart-report/
+frontend/playwright-report/
+frontend/test-results/

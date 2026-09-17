@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./coverageFixture.js"; // symlink
 import { loginAsE2EUser } from "./auth.js";
 
 test("ログイン状態でキャンプ一覧画面が表示される", async ({ page, context, baseURL }) => {
