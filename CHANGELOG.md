@@ -1,3 +1,10 @@
+## [1.37.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.37.1...v1.37.2) (2026-09-21)
+
+
+### Bug Fixes
+
+* **renovate:** dev-standardsのsubmoduleとactionタグの更新PRを束ねる ([#341](https://github.com/bamiyanapp/Camp-Stock/issues/341)) ([ef32675](https://github.com/bamiyanapp/Camp-Stock/commit/ef32675235b1b3b67acaa3791dd9e6e89f44a881))
+
 ## [1.37.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.37.0...v1.37.1) (2026-09-21)
 
 
