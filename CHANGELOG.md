@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.37.0...v1.37.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* **ci:** dev-standardsのsubmodule digestとactionタグを同時に更新する ([#339](https://github.com/bamiyanapp/Camp-Stock/issues/339)) ([f070c7d](https://github.com/bamiyanapp/Camp-Stock/commit/f070c7dc70b5d3b4a0a1e0946fdd6f64382cb319))
+
 # [1.37.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.36.0...v1.37.0) (2026-09-17)
 
 
