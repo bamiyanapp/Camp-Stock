@@ -75,7 +75,7 @@ export function createTestServer() {
       chunks.push(chunk);
     }
     const rawBody = Buffer.concat(chunks).toString("utf-8");
-    let body = {};
+    let body;
     try {
       body = rawBody ? JSON.parse(rawBody) : {};
     } catch {

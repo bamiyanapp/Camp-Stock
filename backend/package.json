@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "lint": "oxlint",
+    "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "seed": "node seed/seed-items.js"
   },
@@ -15,8 +15,11 @@
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^5.0.0",
-    "oxlint": "^1.75.0",
+    "eslint": "^10.11.0",
+    "eslint-plugin-sonarjs": "^4.2.1",
+    "globals": "^17.12.0",
     "vitest": "^5.0.0"
   }
 }
