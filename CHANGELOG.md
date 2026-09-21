@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.37.2...v1.38.0) (2026-09-21)
+
+
+### Features
+
+* **lint:** frontend/backendのlinterをoxlintからESLintへ移行する ([#344](https://github.com/bamiyanapp/Camp-Stock/issues/344)) ([d9fed6a](https://github.com/bamiyanapp/Camp-Stock/commit/d9fed6a0a08f8eee3ba566e7289b734ceb9a7913))
+
 ## [1.37.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.37.1...v1.37.2) (2026-09-21)
 
 
