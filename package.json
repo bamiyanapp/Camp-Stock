@@ -1,7 +1,7 @@
 {
   "name": "camp-stock",
   "private": true,
-  "version": "1.37.2",
+  "version": "1.38.0",
   "scripts": {
     "lint": "commitlint --last --verbose"
   },
