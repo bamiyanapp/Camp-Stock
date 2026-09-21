@@ -5,6 +5,7 @@ import App from "./App.jsx";
 const STORAGE_KEY = "camp-stock-id-token";
 
 function base64UrlEncode(obj) {
+  // eslint-disable-next-line sonarjs/super-linear-regex -- 末尾の"="を削るだけの単純な正規表現で、バックトラック増大の実害は無い
   return btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 

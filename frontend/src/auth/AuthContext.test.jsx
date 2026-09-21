@@ -18,6 +18,7 @@ function base64UrlEncode(obj) {
   return btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
+    // eslint-disable-next-line sonarjs/super-linear-regex -- 末尾の"="を削るだけの単純な正規表現で、バックトラック増大の実害は無い
     .replace(/=+$/, "");
 }
 
