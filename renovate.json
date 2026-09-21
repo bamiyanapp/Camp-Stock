@@ -3,5 +3,13 @@
   "extends": ["config:recommended"],
   "git-submodules": {
     "enabled": true
-  }
+  },
+  "packageRules": [
+    {
+      "description": "dev-standardsのgit submodule参照とGitHub Actions参照（reusable-*.ymlのタグ）を1つのPRへ束ねる。dev-standards側はtextlintの独自ルール追加（issue #537）とreusable-ci.yml側の実行コマンド変更（issue #538）のようにsubmodule実体とworkflow定義がセットで変更されることがあり、この2つの参照を別PRで個別に更新すると不整合でCIが失敗する（issue #338参照）",
+      "matchDatasources": ["git-submodules", "github-actions"],
+      "matchPackageNames": ["dev-standards", "bamiyanapp/dev-standards"],
+      "groupName": "dev-standards"
+    }
+  ]
 }
