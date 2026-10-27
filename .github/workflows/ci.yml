@@ -9,6 +9,10 @@ jobs:
   ci:
     uses: bamiyanapp/dev-standards/.github/workflows/reusable-ci.yml@v2.114.1
     with:
+      # dev-standards自身をローカルcomposite action・スクリプト用に再チェックアウトする際の
+      # 参照先。uses:行の@以降と同じ値を指定する必須入力（dev-standards issue #1071、
+      # v2.105.5以降必須化。Camp-Stock issue #443参照）
+      self_ref: v2.114.1
       frontend_dir: frontend
       backend_dir: backend
       node_version: "22"
