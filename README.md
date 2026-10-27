@@ -30,7 +30,7 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 
 ### ホーム画面追加時の更新
 
-スマートフォンのホーム画面に追加した状態（PWA/スタンドアロン表示）でも最新版に追従できるよう、`dev-standards`の`shared/pwa/`パターン（詳細は`dev-standards/docs/service-worker-update-pattern.md`）を導入している。
+スマートフォンのホーム画面に追加した状態（PWA/スタンドアロン表示）でも最新版に追従できるよう、`dev-standards`の`shared/pwa/`パターン（詳細は[`dev-standards/docs/service-worker-update-pattern.md`](dev-standards/docs/service-worker-update-pattern.md)）を導入している。
 
 - `sync-manifest.local.json`（リポジトリルート）で`shared/pwa/sw.js`・`ServiceWorkerRegistration.jsx`・`UpdateNotifier.jsx`をsymlinkとして取り込む。同期には`node dev-standards/scripts/bootstrap.js`を使う
 - `frontend/public/sw-config.js`（実ファイル、Camp Stock固有）でキャッシュバージョン・先読みURL・APIキャッシュ対象ホストを設定する
@@ -40,7 +40,7 @@ Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケ
 
 ## 共有UIコンポーネント
 
-`dev-standards`の`shared/ui/`（詳細は`dev-standards/docs/shared-ui-components.md`）から、`sync-manifest.local.json`経由でsymlink導入している。
+`dev-standards`の`shared/ui/`（詳細は[`dev-standards/docs/shared-ui-components.md`](dev-standards/docs/shared-ui-components.md)）から、`sync-manifest.local.json`経由でsymlink導入している。
 
 - `ShareButton`（`frontend/src/components/ShareButton.jsx`）: キャンプ詳細画面の招待リンクをQRコードで表示・URLをワンタップコピーできるボタン。スマートフォンオンリーの利用環境で、招待リンクをその場で見せてQRコードを読み取ってもらう共有導線として使う。`qrcode.react`に依存するため、`frontend/vite.config.js`の`resolve.preserveSymlinks: true`が前提
 
@@ -89,7 +89,7 @@ npx playwright install chromium --with-deps  # 初回のみ
 npm run test:e2e
 ```
 
-CIでは`.github/workflows/ci.yml`の`enable_e2e_test: true`により、PR・pushのたびに自動実行される。スクリーンショットはGitHub ActionsのJob Summary・PRコメントに画像として直接埋め込まれる（`dev-standards/docs/cicd-pipeline-specification.md`参照）。
+CIでは`.github/workflows/ci.yml`の`enable_e2e_test: true`により、PR・pushのたびに自動実行される。スクリーンショットはGitHub ActionsのJob Summary・PRコメントに画像として直接埋め込まれる（[`dev-standards/docs/cicd-pipeline-specification.md`](dev-standards/docs/cicd-pipeline-specification.md)参照）。
 
 ### カバレッジ閾値
 
