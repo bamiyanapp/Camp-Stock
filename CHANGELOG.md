@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.38.0...v1.38.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* **ci:** reusable-ci.ymlのself_ref必須入力未指定によるCI起動失敗を修正する ([#444](https://github.com/bamiyanapp/Camp-Stock/issues/444)) ([94bb63b](https://github.com/bamiyanapp/Camp-Stock/commit/94bb63b2ab7dab061204ec3c6c1aaa82854616a3))
+
 # [1.38.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.37.2...v1.38.0) (2026-09-21)
 
 
