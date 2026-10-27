@@ -21,5 +21,5 @@
 
 ## CI/CD
 
-- `.github/workflows/ci.yml`から dev-standardsの`reusable-ci.yml`を呼び出す（`frontend_dir: frontend`, `backend_dir: backend`）
+- `.github/workflows/ci.yml`からdev-standardsの`reusable-ci.yml`を呼び出す。呼び出し時のパラメータは`frontend_dir: frontend`・`backend_dir: backend`である
 - AWSへのデプロイ・GitHub Secrets登録は別途行う（本リポジトリの初期構築時点では未設定）

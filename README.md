@@ -22,25 +22,25 @@ infra/      AWS SAMテンプレート（DynamoDBテーブル・Lambda・API Gate
 
 Googleアカウント（Google Identity Services）によるログインを必須とする。フロントエンドは`@react-oauth/google`でIDトークンを取得し、`Authorization: Bearer <IDトークン>`ヘッダーを付けてAPIを呼び出す。バックエンドは`GOOGLE_CLIENT_ID`環境変数を使ってIDトークンのaudienceを検証する（`backend/src/lib/googleAuth.js`）。
 
-Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケーション）を発行し、承認済みのJavaScript生成元にフロントエンドのURL（CloudFrontドメインなど）を登録しておく必要がある。
+Google Cloud ConsoleでOAuthクライアントID（種類: ウェブアプリケーション）を発行する。承認済みのJavaScript生成元にフロントエンドのURL（CloudFrontドメインなど）を登録しておく必要がある。
 
 ## PWA（ホーム画面追加）
 
-`frontend/public/manifest.json`と`index.html`の`apple-mobile-web-app-*` meta タグにより、iOS Safariでホーム画面に追加した際に正式なPWA（スタンドアロン表示）として認識されるようにしている。iOS Safariには、JavaScriptから操作するストレージ（Cookie/localStorage）を一定期間サイトへの直接アクセスがないと予告なく消去するIntelligent Tracking Prevention（ITP）がある。正式なPWAとして認識されることで、この影響が緩和される可能性がある（効果はApple側の非公開の内部動作に依存し保証はできない）。
+`frontend/public/manifest.json`と`index.html`の`apple-mobile-web-app-*` meta タグを使っている。これにより、iOS Safariでホーム画面に追加した際に正式なPWA（スタンドアロン表示）として認識されるようにしている。iOS Safariには、Intelligent Tracking Prevention（ITP）という機能がある。これは、JavaScriptから操作するストレージ（Cookie/localStorage）を、一定期間サイトへの直接アクセスがないと予告なく消去する。正式なPWAとして認識されることで、この影響が緩和される可能性がある（効果はApple側の非公開の内部動作に依存し保証はできない）。
 
 ### ホーム画面追加時の更新
 
-スマートフォンのホーム画面に追加した状態（PWA/スタンドアロン表示）でも最新版に追従できるよう、`dev-standards`の`shared/pwa/`パターン（詳細は`dev-standards/docs/service-worker-update-pattern.md`）を導入している。
+スマートフォンのホーム画面に追加した状態（PWA/スタンドアロン表示）でも最新版に追従できるようにしたい。そのため、`dev-standards`の`shared/pwa/`パターン（詳細は[`dev-standards/docs/service-worker-update-pattern.md`](dev-standards/docs/service-worker-update-pattern.md)）を導入している。
 
-- `sync-manifest.local.json`（リポジトリルート）で`shared/pwa/sw.js`・`ServiceWorkerRegistration.jsx`・`UpdateNotifier.jsx`をsymlinkとして取り込む。同期には`node dev-standards/scripts/bootstrap.js`を使う
+- `sync-manifest.local.json`（リポジトリルート）で3ファイルをsymlinkとして取り込む。対象は`shared/pwa/sw.js`・`ServiceWorkerRegistration.jsx`・`UpdateNotifier.jsx`である。同期には`node dev-standards/scripts/bootstrap.js`を使う
 - `frontend/public/sw-config.js`（実ファイル、Camp Stock固有）でキャッシュバージョン・先読みURL・APIキャッシュ対象ホストを設定する
-- ページ本体（HTMLナビゲーション）はNetwork First、それ以外の同一オリジンサブリソースはStale-While-Revalidateで扱うため、デプロイ後は常に最新のHTML・アセットを取得できる
+- ページ本体（HTMLナビゲーション）はNetwork First、それ以外の同一オリジンサブリソースはStale-While-Revalidateで扱う。デプロイ後は常に最新のHTML・アセットを取得できる
 - アプリのフォアグラウンド復帰時・5分おきに更新チェックを行い、新バージョンを検知すると再読み込みを促すバナーを表示する（`UpdateNotifier`）
 - `sw.js`本体のキャッシュ戦略を変更した場合は、`frontend/public/sw-config.js`の`cacheVersion`を必ず更新すること（旧キャッシュを確実に破棄させるため）
 
 ## 共有UIコンポーネント
 
-`dev-standards`の`shared/ui/`（詳細は`dev-standards/docs/shared-ui-components.md`）から、`sync-manifest.local.json`経由でsymlink導入している。
+`dev-standards`の`shared/ui/`（詳細は[`dev-standards/docs/shared-ui-components.md`](dev-standards/docs/shared-ui-components.md)）を使っている。`sync-manifest.local.json`経由でsymlink導入している。
 
 - `ShareButton`（`frontend/src/components/ShareButton.jsx`）: キャンプ詳細画面の招待リンクをQRコードで表示・URLをワンタップコピーできるボタン。スマートフォンオンリーの利用環境で、招待リンクをその場で見せてQRコードを読み取ってもらう共有導線として使う。`qrcode.react`に依存するため、`frontend/vite.config.js`の`resolve.preserveSymlinks: true`が前提
 
@@ -80,7 +80,7 @@ cd backend && npm install && npm run lint && npm test
 
 ### E2Eテスト
 
-Playwrightによるフロントエンドのユーザーフローテスト。実AWS・実Google認証は使わず、`backend/e2e/testServer.js`（in-memory repository・fake authenticator）と、`frontend/e2e/auth.js`によるログインバイパス（Cookieへのfakeなidトークン事前注入）で完結する。`frontend/playwright.config.js`の`webServer`設定が、このテストサーバーとViteのdevサーバーの両方を自動起動する。
+Playwrightによるフロントエンドのユーザーフローテスト。実AWS・実Google認証は使わない。代わりに`backend/e2e/testServer.js`（in-memory repository・fake authenticator）を使う。`frontend/e2e/auth.js`によるログインバイパス（Cookieへのfakeなidトークン事前注入）で完結する。`frontend/playwright.config.js`の`webServer`設定が、このテストサーバーとViteのdevサーバーの両方を自動起動する。
 
 ```sh
 cd frontend
@@ -89,17 +89,17 @@ npx playwright install chromium --with-deps  # 初回のみ
 npm run test:e2e
 ```
 
-CIでは`.github/workflows/ci.yml`の`enable_e2e_test: true`により、PR・pushのたびに自動実行される。スクリーンショットはGitHub ActionsのJob Summary・PRコメントに画像として直接埋め込まれる（`dev-standards/docs/cicd-pipeline-specification.md`参照）。
+CIでは`.github/workflows/ci.yml`の`enable_e2e_test: true`により、PR・pushのたびに自動実行される。スクリーンショットは画像として、GitHub ActionsのJob Summary・PRコメントへ直接埋め込まれる。詳細は[`dev-standards/docs/cicd-pipeline-specification.md`](dev-standards/docs/cicd-pipeline-specification.md)を参照する。
 
 ### カバレッジ閾値
 
-`.github/workflows/ci.yml`の`coverage_threshold`（現在80%）を下回ると、backend/frontendそれぞれのCIジョブが失敗する。判定対象はlines/statements/functions/branchesの4指標いずれか。`coverage_check_per_file`は無効にしている。backendの`src/repositories/*`はDynamoDB SDKの薄いラッパーで、in-memory repositoryを使う単体テストでは意図的にカバーしない設計のため、ファイル単位判定にすると常に未達になってしまう。
+`.github/workflows/ci.yml`の`coverage_threshold`（現在80%）を下回ると、backend/frontendそれぞれのCIジョブが失敗する。判定対象はlines/statements/functions/branchesの4指標いずれか。`coverage_check_per_file`は無効にしている。backendの`src/repositories/*`はDynamoDB SDKの薄いラッパーである。in-memory repositoryを使う単体テストでは意図的にカバーしない設計にしている。そのため、ファイル単位判定にすると常に未達になってしまう。
 
 ## 初期データ
 
 `backend/seed/items-seed.json` に、既存スプレッドシートから移行した持ち物マスタの初期データ（約150件）を収録している。`backend/seed/seed-items.js` で DynamoDB へ投入できる（AWS認証情報とテーブル名の環境変数が必要）。
 
-GitHub Actionsの`Seed items master data`ワークフロー（`.github/workflows/seed-items.yml`）から、CDと同じGitHub SecretsのAWS認証情報を使って手動実行できる。実行方法はGitHubのActionsタブ→対象ワークフロー→「Run workflow」。`itemId`をキーにしたPutItemのため、再実行しても重複せず上書きされる。
+GitHub Actionsの`Seed items master data`ワークフロー（`.github/workflows/seed-items.yml`）から手動実行できる。CDと同じGitHub SecretsのAWS認証情報を使う。実行方法はGitHubのActionsタブ→対象ワークフロー→「Run workflow」。`itemId`をキーにしたPutItemのため、再実行しても重複せず上書きされる。
 
 ```sh
 cd backend
@@ -129,7 +129,7 @@ sam build
 sam deploy --guided --parameter-overrides "GoogleClientId=<Google OAuthクライアントIDの値>"
 ```
 
-`sam deploy`完了後、スタックの出力（`ApiEndpoint` / `FrontendBucketName` / `FrontendDistributionId` / `FrontendUrl`）を使ってフロントエンドをビルド・アップロードする。
+`sam deploy`完了後、スタックの出力を使う。出力は`ApiEndpoint` / `FrontendBucketName` / `FrontendDistributionId` / `FrontendUrl`である。これを使ってフロントエンドをビルド・アップロードする。
 
 ```sh
 cd frontend
