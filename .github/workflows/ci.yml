@@ -7,7 +7,7 @@ on:
 
 jobs:
   ci:
-    uses: bamiyanapp/dev-standards/.github/workflows/reusable-ci.yml@v2.114.3
+    uses: bamiyanapp/dev-standards/.github/workflows/reusable-ci.yml@v2.114.5
     with:
       # dev-standards自身をローカルcomposite action・スクリプト用に再チェックアウトする際の
       # 参照先。uses:行の@以降と同じ値を指定する必須入力（dev-standards issue #1071、
