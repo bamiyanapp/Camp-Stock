@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.39.0...v1.40.0) (2026-11-05)
+
+
+### Features
+
+* **ci:** 依存更新Risk Summary（enable_dependency_risk_summary）を有効化する ([#502](https://github.com/bamiyanapp/Camp-Stock/issues/502)) ([421045c](https://github.com/bamiyanapp/Camp-Stock/commit/421045ccf3660139fde6f64e0110d63cd7a7abff))
+
 # [1.39.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.38.1...v1.39.0) (2026-11-05)
 
 
