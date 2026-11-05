@@ -65,5 +65,12 @@ jobs:
       # Camp-Stock issue #495）。dependency-cruiser.config.cjsはdev-standards submodule
       # からのsymlinkで配布済み（sync-manifest.json）
       enable_architecture_check: true
+      # Renovate等が作成した依存更新PRへ、適用/維持リスク判定（CVE/CVSS/KEV/EPSS・
+      # Supply Chainチェック等）とSBOM（CycloneDX）をRisk Summaryとして投稿する
+      # （dev-standards docs/dependency-risk-judgment.md、Camp-Stock issue #496）。
+      # gating（High時の自動マージ停止）・auto_close（High+Low時の自動クローズ）は
+      # 本観点の達成条件（Risk Summary/SBOM投稿）に含まれないため、まずは情報提供のみの
+      # enable_dependency_risk_summaryだけを有効化する
+      enable_dependency_risk_summary: true
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
