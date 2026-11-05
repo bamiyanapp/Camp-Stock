@@ -1,4 +1,5 @@
-import { UnauthorizedError } from "../lib/errors.js";
+import { UnauthorizedError, ValidationError } from "../lib/errors.js";
+import { buildClientErrorLogPayload } from "../clientErrorReporting.js"; // symlink先
 
 export function buildRoutes({
   itemsService,
@@ -24,6 +25,24 @@ export function buildRoutes({
         const { sessionToken, user } =
           await authService.issueSessionFromGoogleIdToken(googleIdToken);
         return { statusCode: 200, body: { sessionToken, user } };
+      },
+    },
+
+    {
+      // ErrorBoundary（frontend/src/components/ErrorBoundary.jsx）が捕捉した
+      // フロントエンドの未捕捉例外を受け取り、CloudWatch Logs（console.error）へ
+      // 残す。認証前の画面（LoginPage等）で発生する例外も報告できるように
+      // skipAuthとする（dev-standards docs/client-error-reporting-pattern.md参照）。
+      method: "POST",
+      path: "/report-client-error",
+      skipAuth: true,
+      handler: async ({ body }) => {
+        const payload = buildClientErrorLogPayload(body);
+        if (!payload) {
+          throw new ValidationError("Invalid input");
+        }
+        console.error("[ClientError]", payload);
+        return { statusCode: 200, body: { message: "Error reported successfully" } };
       },
     },
 

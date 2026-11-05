@@ -55,7 +55,17 @@ export default defineConfig({
     {
       command: "node ../backend/e2e/testServer.js",
       url: `http://localhost:${BACKEND_PORT}/healthz`,
-      env: { PORT: String(BACKEND_PORT) },
+      // npm run test:e2e自体がNODE_OPTIONS=--preserve-symlinksを設定しており、
+      // webServerの子プロセスはこれを継承する。backend側はこのフラグを必要
+      // としない（frontendのVite devサーバーのみがsymlink経由の共有コンポーネント
+      // のnode_modules解決に必要とする）だけでなく、このフラグが立っていると
+      // dev-standardsからsymlinkしたCommonJSファイル（opsAlertNotifier.js・
+      // clientErrorReporting.js）をESM importで名前付きimportした際に、Node.jsが
+      // symlink先ではなくsymlink自身のパス（backendのpackage.jsonの
+      // "type": "module"）を基準にモジュール種別を解決してしまい、named exportが
+      // 一切検出できなくなる不具合を踏む（dev-standards issue起票予定）。
+      // backend側だけこのフラグを明示的に空へ上書きして回避する。
+      env: { PORT: String(BACKEND_PORT), NODE_OPTIONS: "" },
       reuseExistingServer: !process.env.CI,
     },
     {
