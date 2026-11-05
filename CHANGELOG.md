@@ -1,3 +1,10 @@
+## [1.41.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.41.0...v1.41.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **cd:** sam deployの--parameter-overridesへ空文字列を渡してデプロイが失敗する問題を修正する ([#507](https://github.com/bamiyanapp/Camp-Stock/issues/507)) ([2ab5ee1](https://github.com/bamiyanapp/Camp-Stock/commit/2ab5ee1c7ea850810d0e7d72576ff35163a83e71))
+
 # [1.41.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.40.0...v1.41.0) (2026-11-05)
 
 
