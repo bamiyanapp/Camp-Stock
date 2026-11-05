@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.41.1...v1.42.0) (2026-11-05)
+
+
+### Features
+
+* ErrorBoundaryとサーバーサイドロギングによるフロントエンドエラー報告を導入する ([#510](https://github.com/bamiyanapp/Camp-Stock/issues/510)) ([9fd3182](https://github.com/bamiyanapp/Camp-Stock/commit/9fd31820cef9b06276b5d9ed846d20929bde3538)), closes [#498](https://github.com/bamiyanapp/Camp-Stock/issues/498)
+
 ## [1.41.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.41.0...v1.41.1) (2026-11-05)
 
 
