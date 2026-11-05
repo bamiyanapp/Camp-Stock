@@ -11,8 +11,9 @@ jobs:
     with:
       # dev-standards自身をローカルcomposite action・スクリプト用に再チェックアウトする際の
       # 参照先。uses:行の@以降と同じ値を指定する必須入力（dev-standards issue #1071、
-      # v2.105.5以降必須化。Camp-Stock issue #443参照）
-      self_ref: v2.114.1
+      # v2.105.5以降必須化。Camp-Stock issue #443参照）。uses:行のタグ更新時は
+      # 必ず同じ値へ更新すること（更新漏れの再発防止、Camp-Stock issue #495で発見）
+      self_ref: v2.116.0
       frontend_dir: frontend
       backend_dir: backend
       node_version: "22"
@@ -60,5 +61,9 @@ jobs:
       # 実体はdev-standards自身のnpm test内で検証済み）は対象外にする。
       enable_text_lint: true
       text_lint_paths: "README.md\nCLAUDE.md"
+      # frontend/backend間の越境import・循環依存を検知する（dev-standards issue #523、
+      # Camp-Stock issue #495）。dependency-cruiser.config.cjsはdev-standards submodule
+      # からのsymlinkで配布済み（sync-manifest.json）
+      enable_architecture_check: true
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
