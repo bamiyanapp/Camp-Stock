@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.38.1...v1.39.0) (2026-11-05)
+
+
+### Features
+
+* **ci:** アーキテクチャ境界チェック（enable_architecture_check）を有効化する ([#499](https://github.com/bamiyanapp/Camp-Stock/issues/499)) ([83fd19a](https://github.com/bamiyanapp/Camp-Stock/commit/83fd19a76768aacb5be556a88077f5b69abf17ed))
+
 ## [1.38.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.38.0...v1.38.1) (2026-10-27)
 
 
