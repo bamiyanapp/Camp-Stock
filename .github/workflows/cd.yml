@@ -107,7 +107,10 @@ jobs:
       # OPS_ALERT_LINE_*は運用監視専用LINE Bot（issue #497）のSecrets。未開設の間は
       # GitHub Secrets自体が存在せず空文字列になるが、GoogleClientId/SessionSecretとは
       # 異なり検証・デプロイ失敗はさせない（opsAlertLambda.js側が空の場合に通知をスキップする
-      # 設計のため、Bot開設前でもAlarm・SNS・Lambda自体は作成できる）。
+      # 設計のため、Bot開設前でもAlarm・SNS・Lambda自体は作成できる）。ただしsam deployの
+      # --parameter-overridesは`Key=`（値が空文字列）のshorthand形式自体を拒否するため、
+      # 値が空の場合はパラメータを渡さずCloudFormation側のDefault: ""へフォールバックさせる
+      # 必要がある（issue #506）。
       - name: Deploy backend (SAM)
         working-directory: infra
         env:
@@ -116,13 +119,20 @@ jobs:
           OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN }}
           OPS_ALERT_LINE_USER_ID: ${{ secrets.OPS_ALERT_LINE_USER_ID }}
         run: |
+          parameter_overrides=("GoogleClientId=${GOOGLE_CLIENT_ID}" "SessionSecret=${SESSION_SECRET}")
+          if [[ -n "$OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN" ]]; then
+            parameter_overrides+=("OpsAlertLineChannelAccessToken=${OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN}")
+          fi
+          if [[ -n "$OPS_ALERT_LINE_USER_ID" ]]; then
+            parameter_overrides+=("OpsAlertLineUserId=${OPS_ALERT_LINE_USER_ID}")
+          fi
           sam deploy \
             --stack-name "$STACK_NAME" \
             --resolve-s3 \
             --capabilities CAPABILITY_IAM \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides "GoogleClientId=${GOOGLE_CLIENT_ID}" "SessionSecret=${SESSION_SECRET}" "OpsAlertLineChannelAccessToken=${OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN}" "OpsAlertLineUserId=${OPS_ALERT_LINE_USER_ID}"
+            --parameter-overrides "${parameter_overrides[@]}"
 
       - name: Get stack outputs
         id: stack-outputs
