@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createRouter } from "../src/router.js";
 import { buildRoutes } from "../src/routes/index.js";
 import { createItemsService } from "../src/services/itemsService.js";
@@ -481,5 +481,41 @@ describe("POST /auth/session", () => {
       body: {},
     });
     expect(result.statusCode).toBe(401);
+  });
+});
+
+describe("POST /report-client-error", () => {
+  it("skipAuthのため未認証でもフロントエンドの例外情報を受け付ける", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const router = createRouter(setupRoutes(), {
+      authenticate: async () => {
+        throw new Error("skipAuthのルートでauthenticateが呼ばれてはいけない");
+      },
+    });
+
+    const result = await router.handleRequest({
+      method: "POST",
+      path: "/report-client-error",
+      headers: {},
+      body: { message: "boom", stack: "at foo", url: "https://example.com/" },
+    });
+
+    expect(result).toEqual({ statusCode: 200, body: { message: "Error reported successfully" } });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[ClientError]",
+      expect.objectContaining({ message: "boom" })
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("messageが無い場合は400を返す", async () => {
+    const router = createRouter(setupRoutes());
+    const result = await router.handleRequest({
+      method: "POST",
+      path: "/report-client-error",
+      headers: {},
+      body: {},
+    });
+    expect(result.statusCode).toBe(400);
   });
 });
