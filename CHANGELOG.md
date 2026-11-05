@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.40.0...v1.41.0) (2026-11-05)
+
+
+### Features
+
+* **infra:** 運用監視（CloudWatch Alarm経由のサイレント障害検知）を導入する ([#504](https://github.com/bamiyanapp/Camp-Stock/issues/504)) ([592d6af](https://github.com/bamiyanapp/Camp-Stock/commit/592d6af213343b35ee5d8738597b212773092986))
+
 # [1.40.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.39.0...v1.40.0) (2026-11-05)
 
 
