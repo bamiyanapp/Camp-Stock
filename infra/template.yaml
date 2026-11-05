@@ -17,6 +17,20 @@ Parameters:
       使えないため、GoogleClientIdと同様にCI（cd.yml）がGitHub Actions
       Secretsから注入する
     NoEcho: true
+  OpsAlertLineChannelAccessToken:
+    Type: String
+    Description: >-
+      運用監視専用LINE Bot（全プロダクト共通、dev-standards
+      docs/ops-monitoring-pattern.md参照）のChannel Access Token。
+      未開設の間はデプロイを止めないよう既定値を空文字列にする
+      （opsAlertLambda.jsが空の場合は通知をスキップする設計、issue #497）
+    NoEcho: true
+    Default: ""
+  OpsAlertLineUserId:
+    Type: String
+    Description: 運用監視専用LINE Botの通知先ユーザーID。OpsAlertLineChannelAccessTokenと同様、既定値は空文字列
+    NoEcho: true
+    Default: ""
 
 Globals:
   Function:
@@ -133,6 +147,75 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /{proxy+}
             Method: ANY
+
+  # 運用監視（サイレント障害検知、dev-standards docs/ops-monitoring-pattern.md、issue #497）。
+  # ApiFunctionのエラー・スロットリングをCloudWatch Alarmで検知し、SNS経由でOpsAlertFunctionを
+  # 起動してLINEへ通知する。LINE Bot未開設の間はOpsAlertFunction側が空のSecretsを検知して
+  # 通知をスキップするのみで、Alarm自体は作成・評価され続ける。
+  OpsAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: camp-stock-ops-alert
+
+  ApiFunctionErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: camp-stock-api-errors
+      AlarmDescription: ApiFunctionが5分間に1件以上のエラーを記録した場合に発報する
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      # エラーが0件（メトリクス自体が存在しない）ことは正常なため、no-invocations検知
+      # （ops-monitoring-pattern.mdのbreaching例）とは異なりnotBreachingにする
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref OpsAlertTopic
+      OKActions:
+        - !Ref OpsAlertTopic
+
+  ApiFunctionThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: camp-stock-api-throttles
+      AlarmDescription: ApiFunctionが5分間に1件以上スロットリングされた場合に発報する
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref OpsAlertTopic
+      OKActions:
+        - !Ref OpsAlertTopic
+
+  OpsAlertFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: camp-stock-ops-alert
+      CodeUri: ../backend
+      Handler: src/opsAlertLambda.handler
+      Environment:
+        Variables:
+          OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN: !Ref OpsAlertLineChannelAccessToken
+          OPS_ALERT_LINE_USER_ID: !Ref OpsAlertLineUserId
+      Events:
+        AlarmNotification:
+          Type: SNS
+          Properties:
+            Topic: !Ref OpsAlertTopic
 
   # フロントエンド（Vite/Reactのビルド成果物）配信用。バケット自体はパブリック
   # アクセスをブロックし、CloudFrontのOrigin Access Control経由でのみ読み取りを許可する。

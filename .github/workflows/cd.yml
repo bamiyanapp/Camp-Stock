@@ -104,11 +104,17 @@ jobs:
         run: sam build
 
       # SAMの管理用S3バケットは--resolve-s3で自動作成・再利用する
+      # OPS_ALERT_LINE_*は運用監視専用LINE Bot（issue #497）のSecrets。未開設の間は
+      # GitHub Secrets自体が存在せず空文字列になるが、GoogleClientId/SessionSecretとは
+      # 異なり検証・デプロイ失敗はさせない（opsAlertLambda.js側が空の場合に通知をスキップする
+      # 設計のため、Bot開設前でもAlarm・SNS・Lambda自体は作成できる）。
       - name: Deploy backend (SAM)
         working-directory: infra
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN }}
+          OPS_ALERT_LINE_USER_ID: ${{ secrets.OPS_ALERT_LINE_USER_ID }}
         run: |
           sam deploy \
             --stack-name "$STACK_NAME" \
@@ -116,7 +122,7 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides "GoogleClientId=${GOOGLE_CLIENT_ID}" "SessionSecret=${SESSION_SECRET}"
+            --parameter-overrides "GoogleClientId=${GOOGLE_CLIENT_ID}" "SessionSecret=${SESSION_SECRET}" "OpsAlertLineChannelAccessToken=${OPS_ALERT_LINE_CHANNEL_ACCESS_TOKEN}" "OpsAlertLineUserId=${OPS_ALERT_LINE_USER_ID}"
 
       - name: Get stack outputs
         id: stack-outputs

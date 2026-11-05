@@ -8,6 +8,7 @@
     { "source": "shared/ui/formatBuildTime.js", "target": "frontend/src/components/formatBuildTime.js" },
     { "source": "shared/e2e/fakeAuthenticator.js", "target": "backend/e2e/fakeAuthenticator.js" },
     { "source": "shared/e2e/fakeSessionToken.js", "target": "frontend/e2e/fakeSessionToken.js" },
-    { "source": "shared/e2e/coverageFixture.js", "target": "frontend/e2e/coverageFixture.js" }
+    { "source": "shared/e2e/coverageFixture.js", "target": "frontend/e2e/coverageFixture.js" },
+    { "source": "shared/lambda/opsAlertNotifier.js", "target": "backend/src/opsAlertNotifier.js" }
   ]
 }
