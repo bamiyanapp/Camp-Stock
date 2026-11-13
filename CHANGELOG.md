@@ -1,3 +1,10 @@
+## [1.42.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.42.0...v1.42.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* self_refドリフト修正とpermissionsブロック明示 ([#544](https://github.com/bamiyanapp/Camp-Stock/issues/544)) ([53ebf43](https://github.com/bamiyanapp/Camp-Stock/commit/53ebf433f07a9cdc1eea981cadeafa15fbcd6ce8))
+
 # [1.42.0](https://github.com/bamiyanapp/Camp-Stock/compare/v1.41.1...v1.42.0) (2026-11-05)
 
 
