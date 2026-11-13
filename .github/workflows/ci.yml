@@ -5,6 +5,14 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+  pull-requests: write
+  # enable_dependency_risk_summaryが要求する権限（dev-standards#1334）。
+  # GitHub Actionsはjob定義のpermissionsを静的にチェックするため、本ブロックが
+  # 無いとリポジトリ既定の権限次第で無警告のstartup_failureになり得る
+  issues: write
+
 jobs:
   ci:
     uses: bamiyanapp/dev-standards/.github/workflows/reusable-ci.yml@v2.121.2
@@ -13,7 +21,7 @@ jobs:
       # 参照先。uses:行の@以降と同じ値を指定する必須入力（dev-standards issue #1071、
       # v2.105.5以降必須化。Camp-Stock issue #443参照）。uses:行のタグ更新時は
       # 必ず同じ値へ更新すること（更新漏れの再発防止、Camp-Stock issue #495で発見）
-      self_ref: v2.116.0
+      self_ref: v2.121.2
       frontend_dir: frontend
       backend_dir: backend
       node_version: "22"
