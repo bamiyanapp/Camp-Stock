@@ -1,3 +1,10 @@
+## [1.42.2](https://github.com/bamiyanapp/Camp-Stock/compare/v1.42.1...v1.42.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* **renovate:** dev-standardsの3参照を1PRへ束ね、semantic-release v26を保留する ([#610](https://github.com/bamiyanapp/Camp-Stock/issues/610)) ([2d261ba](https://github.com/bamiyanapp/Camp-Stock/commit/2d261bad574b6a89f8f745bdd0cb76963a5390af)), closes [#607](https://github.com/bamiyanapp/Camp-Stock/issues/607) [#609](https://github.com/bamiyanapp/Camp-Stock/issues/609)
+
 ## [1.42.1](https://github.com/bamiyanapp/Camp-Stock/compare/v1.42.0...v1.42.1) (2026-11-13)
 
 
