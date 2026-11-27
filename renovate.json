@@ -4,12 +4,27 @@
   "git-submodules": {
     "enabled": true
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "self_refは、uses:行と同じdev-standardsのタグを指す必要がある。しかしRenovateのgithub-actionsマネージャーは、プレーンな文字列入力であるself_ref:を検知しない。そのためuses:だけが更新され、standards-checkが失敗していた（issue #607）。正規表現で、更新対象へ加える。managerFilePatternsは、正規表現を/で囲む（囲まないとglobとして扱われ、何にも一致しない）",
+      "managerFilePatterns": ["/^\\.github/workflows/.*\\.yml$/"],
+      "matchStrings": ["self_ref:\\s*(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "bamiyanapp/dev-standards",
+      "datasourceTemplate": "github-tags"
+    }
+  ],
   "packageRules": [
     {
-      "description": "dev-standardsのgit submodule参照とGitHub Actions参照（reusable-*.ymlのタグ）を1つのPRへ束ねる。dev-standards側はtextlintの独自ルール追加（issue #537）とreusable-ci.yml側の実行コマンド変更（issue #538）のようにsubmodule実体とworkflow定義がセットで変更されることがあり、この2つの参照を別PRで個別に更新すると不整合でCIが失敗する（issue #338参照）",
-      "matchDatasources": ["git-submodules", "github-actions"],
-      "matchPackageNames": ["dev-standards", "bamiyanapp/dev-standards"],
+      "description": "dev-standardsのgit submodule、uses:のタグ、self_refを、1つのPRへ束ねる。reusable-ci.ymlのstandards-checkは、submodule内のスクリプトを実行し、uses:とself_refの一致も検査する。3つを別々のPRで更新すると、片方だけ先にマージされて失敗する（issue #338・#607）。matchDatasourcesではなくmatchManagersを使う。git-submodulesとgithub-actionsはデータソース名ではなくマネージャー名のため、以前の指定は一度も一致していなかった。submoduleのdepNameはパス（dev-standards）、uses:とself_refのdepNameはbamiyanapp/dev-standardsになる",
+      "matchManagers": ["git-submodules", "github-actions", "custom.regex"],
+      "matchDepNames": ["dev-standards", "bamiyanapp/dev-standards"],
       "groupName": "dev-standards"
+    },
+    {
+      "description": "semantic-release v26は、Node.js 26.13以上が必須で、依存にbeta版のプラグイン（@semantic-release/npm ^14.0.0-beta等）を含む。CIのジョブはNode.js 22で、package.jsonのプラグインは安定版である。そのまま上げると、CDのreleaseジョブを壊しうる。PR #595は、npm 12がnpm@12.2.3の取得を拒否し（EALLOWREMOTE）、lockfileを更新できなかった。移行の条件が決まるまで、v26への更新を保留する（issue #609）",
+      "matchPackageNames": ["semantic-release"],
+      "allowedVersions": "<26"
     }
   ]
 }
